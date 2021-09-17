@@ -1,8 +1,14 @@
 <footer class="footer">
     <div class="container footer__container">
-        <a class="logo footer__logo">
-            <img src="<?php echo get_template_directory_uri(); ?>/assets/img/logo.svg" alt="Логотип Блога">
-        </a>
+        <?php if (is_front_page()) { ?>
+            <a class="logo header__logo">
+                <img src="<?php echo get_template_directory_uri(); ?>/assets/img/logo.svg" alt="Логотип Блога">
+            </a>
+        <?php } else { ?>
+            <a href="<?php echo home_url(); ?>" class="logo header__logo">
+                <img src="<?php echo get_template_directory_uri(); ?>/assets/img/logo.svg" alt="Логотип Блога">
+            </a>
+        <?php }?>
         <nav class="nav footer__nav">
             <ul class="nav__list list-reset">
                 <li class="nav__item"><a class="nav__link nav__link--current">Главная</a></li>

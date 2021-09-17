@@ -22,3 +22,5 @@ function blog_scripts() {
 add_action( 'wp_enqueue_scripts', 'blog_scripts' );
 
 show_admin_bar(false);
+
+add_theme_support('post-thumbnails');
