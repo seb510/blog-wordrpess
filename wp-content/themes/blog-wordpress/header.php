@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Главная | Блог</title>
+    <title><?php wp_title(); ?></title>
 <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
@@ -20,15 +20,15 @@
         </a>
         <?php }?>
         <div class="header__right">
-            <nav class="nav header__nav">
-                <ul class="nav__list list-reset">
-                    <li class="nav__item"><a class="nav__link nav__link--current">Главная</a></li>
-                    <li class="nav__item"><a href="#" class="nav__link">О нас</a></li>
-                    <li class="nav__item"><a href="#" class="nav__link">Контакты</a></li>
-                    <li class="nav__item"><a href="#" class="nav__link search-link">Поиск</a></li>
-                </ul>
-            </nav>
-            <a href="tel:+798788787" class="phone">+7 (987) 887-87</a>
+            <?php
+            wp_nav_menu( array(
+                'theme_location' => 'my-custom-menu',
+                'container_class' => 'nav header__nav',
+                'container'       => 'nav',
+                'menu_class'      => 'nav__list list-reset',
+            ));
+            ?>
+            <a href="tel:+7 (987) 887-87" class="phone">+7 (987) 887-87</a>
         </div>
     </div>
     <div class="header-search">
@@ -37,7 +37,7 @@
                 <g clip-path="url(#clip0)">
                     <path
                         d="M0.141602 0.834488C-0.0458984 0.646988 -0.0458984 0.334925 0.141602 0.140869C0.335657 -0.0466309 0.641164 -0.0466309 0.83522 0.140869L4.99737 4.31001L9.16651 0.140869C9.35401 -0.0466309 9.66608 -0.0466309 9.85314 0.140869C10.0472 0.334925 10.0472 0.647425 9.85314 0.834488L5.69099 4.99708L9.85314 9.16622C10.0472 9.35372 10.0472 9.66578 9.85314 9.85984C9.66564 10.0473 9.35358 10.0473 9.16651 9.85984L4.99737 5.69069L0.83522 9.85984C0.641164 10.0473 0.335657 10.0473 0.141602 9.85984C-0.0458984 9.66578 -0.0458984 9.35328 0.141602 9.16622L4.30375 4.99708L0.141602 0.834488Z"
-                        fill="#2F2222" />
+                      fill="#2F2222" />
                 </g>
                 <defs>
                     <clipPath id="clip0">
@@ -46,8 +46,8 @@
                 </defs>
             </svg>
         </button>
-        <form action="#" class="header-search__form">
-            <input type="search" class="header-search__input form-input">
+        <form action="/" class="header-search__form">
+            <input type="search" name="s" class="header-search__input form-input">
             <button class="header-search__btn form-btn btn-reset">
                 <span>Найти</span>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

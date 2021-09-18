@@ -1,10 +1,23 @@
-const searchLink = document.querySelector('.search-link');
-const searchBlock = document.querySelector('.header-search');
-const searchClose = document.querySelector('.header-search__close');
-searchLink.addEventListener('click', () => {
-    searchBlock.style.display = 'block';
-});
+jQuery(document).ready(function($) {
+    $(document).on('click', '.search-link', function (){
+        $('.header-search').fadeIn(600);
+    });
+    $(document).on('click', '.header-search__close', function (){
+        $('.header-search').fadeOut(600);
+    });
 
-searchClose.addEventListener('click', () => {
-    searchBlock.style.display = 'none';
+    $(document).on('submit', '.callback-form', (e) =>{
+        e.preventDefault();
+
+        let action = $(e.currentTarget).attr('action');
+        let th = $(e.currentTarget);
+
+        $.ajax({
+            type: 'POST',
+            url : action,
+            data: th.serialize()
+        }).done(function (){
+            console.log('Отправлено!');
+        })
+    })
 });

@@ -1,6 +1,7 @@
 <?php
-
-global $post;
+/**
+ * Template Name: About page
+ */
     get_header();
 ?>
 

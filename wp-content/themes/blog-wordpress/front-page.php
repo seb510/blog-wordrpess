@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Template Name: Front page
+ */
 global $post;
     get_header();
 ?>
