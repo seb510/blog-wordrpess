@@ -6,9 +6,11 @@ get_header();
 ?>
 
 <main class="main">
+    <section class="category-banner">
+        <h1 class="category-banner__title">Контакты</h1>
+    </section>
     <section class="contacts">
         <div class="container contacts__container">
-            <h1 class="visually-hidden">Контакты</h1>
             <div class="contacts__left">
                 <h2 class="contacts__title blog-title">Контактная информация</h2>
                 <a href="tel:<?php the_field('phone'); ?>" class="phone phone--contacts"><?php the_field('phone'); ?></a>
