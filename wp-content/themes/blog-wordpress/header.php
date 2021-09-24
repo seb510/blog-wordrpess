@@ -28,6 +28,7 @@
                 'menu_class'      => 'nav__list list-reset',
             ));
             ?>
+            <li class="nav__item nav__item-search"><a href="#" class="nav__link search-link">Поиск</a></li>
             <a href="tel:+7 (987) 887-87" class="phone">+7 (987) 887-87</a>
         </div>
     </div>

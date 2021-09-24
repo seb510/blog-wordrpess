@@ -6,6 +6,8 @@ jQuery(document).ready(function($) {
         $('.header-search').fadeOut(600);
     });
 
+    $('.nav__list').append($('.nav__item-search'));
+
     /*$(document).on('submit', '.callback-form', (e) =>{
         e.preventDefault();
 
@@ -21,39 +23,38 @@ jQuery(document).ready(function($) {
         })
     });*/
 
+    $('.more-posts').click(function(){
 
+        var button = $(this),
+            data = {
+                'action': 'loadmore',
+                'query': loadmore_params.posts, // that's how we get params from wp_localize_script() function
+                'page' : loadmore_params.current_page
+            };
+        console.log(data);
 
-    var ppp = 3; // Post per page
-    var pageNumber = 1;
-
-
-    function load_posts(){
-        pageNumber++;
-        var str = '&pageNumber=' + pageNumber + '&ppp=' + ppp + '&action=more_post_ajax';
-        $.ajax({
-            type: "POST",
-            dataType: "html",
-            url: ajax_posts.ajaxurl,
-            data: str,
-            success: function(data){
-                var $data = $(data);
-                if($data.length){
-                    $(".ajax-posts").append($data);
-                    $("#more_posts").attr("disabled",false);
-                } else{
-                    $("#more_posts").attr("disabled",true);
-                }
+        $.ajax({ // you can also use $.post here
+            url : loadmore_params.ajaxurl, // AJAX handler
+            data : data,
+            type : 'POST',
+            beforeSend : function ( xhr ) {
+                button.text('Loading...'); // change the button text, you can also add a preloader image
             },
-            error : function(jqXHR, textStatus, errorThrown) {
-                $loader.html(jqXHR + " :: " + textStatus + " :: " + errorThrown);
+            success : function( data ){
+                if( data ) {
+                    button.text( 'More posts' ).prev().before(data); // insert new posts
+                    loadmore_params.current_page++;
+
+                    if ( loadmore_params.current_page == loadmore_params.max_page )
+                        button.remove(); // if last page, remove the button
+
+                    // you can also fire the "post-load" event here if you use a plugin that requires it
+                    // $( document.body ).trigger( 'post-load' );
+                } else {
+                    button.remove(); // if no data, remove the button as well
+                }
             }
-
         });
-        return false;
-    }
-
-    $("#more_posts").on("click",function(){ // When btn is pressed.
-        $("#more_posts").attr("disabled",true); // Disable the button, temp.
-        load_posts();
     });
+
 });

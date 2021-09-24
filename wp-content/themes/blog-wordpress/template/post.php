@@ -1,5 +1,5 @@
 <li class="post-grid__item">
-    <article class="blog-post">
+    <article class="blog-post" >
         <?php
         $category=  get_the_category();
         $cat_link = get_category_link( $category[0] );

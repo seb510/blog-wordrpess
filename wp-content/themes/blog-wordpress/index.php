@@ -1,6 +1,5 @@
 <?php
 
-global $wp_query;
 get_header();
 ?>
 
@@ -49,25 +48,31 @@ get_header();
                     </article>
                 <?php } wp_reset_postdata(); ?>
                 <ul class="ajax-posts post-grid list-reset">
-                    <?php
-                    $result = wp_get_recent_posts( [
-                        'offset'           => 1,
-                        'orderby'          => 'post_date',
-                        'post_type'        => 'post',
-                        'suppress_filters' => true,
-                    ], OBJECT );
-                    foreach( $result as $post ){
-                        setup_postdata( $post );
-                        get_template_part( 'template/post');
-                     } wp_reset_postdata(); ?>
+                <?php
+                $args = array(
+                    'post_type'    => 'post',
+                    'posts_per_page' => 7,
+                    'post_status' => 'publish',
+                    'offset'         => 1,
+                    'orderby'        => 'post_date',
+                );
+
+                $query = new WP_Query( $args );
+
+                // Цикл
+                if ( $query->have_posts() ) {
+                    while ( $query->have_posts() ) {
+                        $query->the_post();
+                         get_template_part( 'template/post');
+                    }
+                }
+                wp_reset_postdata(); ?>
                 </ul>
 
                 <?php
-                if (  $wp_query->max_num_pages > 1 )
+                if (  $query->max_num_pages > 1 )
                     echo "<button type='button' id='more-posts' class='form-btn btn-reset more-posts'  data-currentPage='1'>Больше </button>";
                 ?>
-
-
             </div>
             <?php get_sidebar() ?>
         </div>

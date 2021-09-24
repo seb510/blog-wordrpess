@@ -42,13 +42,6 @@ function wpb_custom_new_menu() {
 }
 add_action( 'init', 'wpb_custom_new_menu' );
 
-wp_localize_script( 'blog-wordpress-main', 'ajax_posts', array(
-    'ajaxurl' => admin_url( 'admin-ajax.php' ),
-    'posts' => json_encode( $wp_query->query_vars ), // everything about your loop is here
-    'current_page' => get_query_var( 'paged' ) ? get_query_var('paged') : 1,
-    'max_page' => $wp_query->max_num_pages
-));
-
 function load_more_scripts() {
 
     global $wp_query;
@@ -65,32 +58,24 @@ function load_more_scripts() {
 
 add_action( 'wp_enqueue_scripts', 'load_more_scripts' );
 
-function more_post_ajax(){
+function loadmore_ajax_handler(){
 
-    $ppp = (isset($_POST["ppp"])) ? $_POST["ppp"] : 3;
-    $page = (isset($_POST['pageNumber'])) ? $_POST['pageNumber'] : 0;
+    // prepare our arguments for the query
+    $args = json_decode( stripslashes( $_POST['query'] ), true );
+    $args['paged'] = $_POST['page'] + 1; // we need next page to be loaded
+    $args['post_status'] = 'publish';
 
-    header("Content-Type: text/html");
+    // it is always better to use WP_Query but not here
+    query_posts( $args );
 
-    $args = array(
-        'suppress_filters' => true,
-        'post_type' => 'post',
-        'posts_per_page' => $ppp,
-        'paged'    => $page,
-    );
-
-    $loop = new WP_Query($args);
-
-    $out = '';
-
-    if ($loop -> have_posts()) :  while ($loop -> have_posts()) : $loop -> the_post();
-        $out .= get_template_part( 'template/post');
-
-    endwhile;
+    if( have_posts() ) :
+        // run the loop
+        while( have_posts() ): the_post();
+            get_template_part( 'template/post');
+        endwhile;
     endif;
-    wp_reset_postdata();
-    die($out);
+    die;
 }
 
-add_action('wp_ajax_nopriv_more_post_ajax', 'more_post_ajax');
-add_action('wp_ajax_more_post_ajax', 'more_post_ajax');
+add_action('wp_ajax_loadmore', 'loadmore_ajax_handler'); // wp_ajax_{action}
+add_action('wp_ajax_nopriv_loadmore', 'loadmore_ajax_handler');
