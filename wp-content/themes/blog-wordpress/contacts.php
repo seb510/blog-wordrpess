@@ -31,7 +31,7 @@ get_header();
                 <div class="contacts-form-wrapper">
                     <h2 class="contacts__title blog-title">Напишите нам</h2>
                     <?php echo do_shortcode( '[contact-form-7 id="56" title="Contact form 1"]' ); ?>
-                    <form action="" class="callback-form">
+                   <!-- <form action="" class="callback-form">
                         <input type="text" class="form-input callback-form__input" placeholder="Ваше имя">
                         <input type="tel" class="form-input callback-form__input" placeholder="Ваше телефон">
                         <textarea class="form-input callback-form__textarea" placeholder="Сообщение..."></textarea>
@@ -50,7 +50,7 @@ get_header();
                                 </defs>
                             </svg>
                         </button>
-                    </form>
+                    </form>-->
                 </div>
             </div>
         </div>
