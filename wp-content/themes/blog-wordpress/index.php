@@ -51,7 +51,7 @@ get_header();
                 <?php
                 $args = array(
                     'post_type'    => 'post',
-                    'posts_per_page' => 7,
+                    'posts_per_page' => 10,
                     'post_status' => 'publish',
                     'offset'         => 1,
                     'orderby'        => 'post_date',
@@ -68,11 +68,7 @@ get_header();
                 }
                 wp_reset_postdata(); ?>
                 </ul>
-
-                <?php
-                if (  $query->max_num_pages > 1 )
-                    echo "<button type='button' id='more-posts' class='form-btn btn-reset more-posts'  data-currentPage='1'>Больше </button>";
-                ?>
+                <?php echo get_the_posts_pagination();  ?>
             </div>
             <?php get_sidebar() ?>
         </div>
