@@ -17,7 +17,6 @@ get_header();
                 $result = wp_get_recent_posts( [
                     'numberposts'      => 1,
                     'offset'           => 0,
-                    'category'         => 0,
                     'orderby'          => 'post_date',
                     'post_type'        => 'post',
                     'suppress_filters' => true,
@@ -44,15 +43,16 @@ get_header();
                             echo wp_trim_words( $content, 30, '&hellip;' );
                             ?>
                         </p>
-                        <time class="blog-post__date"><?php the_date('j F Y'); ?></time>
+                        <time class="blog-post__date"><?php echo get_the_date('j F Y'); ?></time>
                     </article>
                 <?php } wp_reset_postdata(); ?>
-                <ul class="ajax-posts post-grid list-reset">
+                <ul id="ajax-posts" class="post-grid list-reset">
                 <?php
+                $postsPerPage = 2;
                 $args = array(
-                    'post_type'    => 'post',
-                    'posts_per_page' => 10,
-                    'post_status' => 'publish',
+                    'post_type'      => 'post',
+                    'posts_per_page' => $postsPerPage,
+                    'post_status'    => 'publish',
                     'offset'         => 1,
                     'orderby'        => 'post_date',
                 );
@@ -68,7 +68,7 @@ get_header();
                 }
                 wp_reset_postdata(); ?>
                 </ul>
-                <?php echo get_the_posts_pagination();  ?>
+                <div id="more_posts" class="btn load-more">Показать еще</div>
             </div>
             <?php get_sidebar() ?>
         </div>

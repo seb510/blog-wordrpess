@@ -18,6 +18,6 @@
             echo wp_trim_words( $content, 30, '&hellip;' );
             ?>
         </p>
-        <time class="blog-post__date"><?php the_date('j F Y')?></time>
+        <time class="blog-post__date"><?php echo get_the_date('j F Y'); ?></time>
     </article>
 </li>
