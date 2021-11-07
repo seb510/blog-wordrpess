@@ -2,10 +2,6 @@ jQuery(document).ready(function($) {
 
     $(document).on('click', '.search-link', function (){
         $('.header-search').fadeIn(600);
-        $('.menuToggle').removeClass('active');
-        $(this).removeClass("active");
-        $('body').removeClass('hidden');
-        $('.header__wrapper').slideUp();
     });
 
     $(document).on('click', '.header-search__close', function (){
