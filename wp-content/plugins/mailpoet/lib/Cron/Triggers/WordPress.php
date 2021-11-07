@@ -12,6 +12,7 @@ use MailPoet\Cron\Workers\Bounce as BounceWorker;
 use MailPoet\Cron\Workers\InactiveSubscribers;
 use MailPoet\Cron\Workers\KeyCheck\PremiumKeyCheck as PremiumKeyCheckWorker;
 use MailPoet\Cron\Workers\KeyCheck\SendingServiceKeyCheck as SendingServiceKeyCheckWorker;
+use MailPoet\Cron\Workers\ReEngagementEmailsScheduler;
 use MailPoet\Cron\Workers\Scheduler as SchedulerWorker;
 use MailPoet\Cron\Workers\SendingQueue\Migration as MigrationWorker;
 use MailPoet\Cron\Workers\SendingQueue\SendingQueue as SendingQueueWorker;
@@ -21,6 +22,7 @@ use MailPoet\Cron\Workers\SubscriberLinkTokens;
 use MailPoet\Cron\Workers\SubscribersCountCacheRecalculation;
 use MailPoet\Cron\Workers\SubscribersEngagementScore;
 use MailPoet\Cron\Workers\SubscribersLastEngagement;
+use MailPoet\Cron\Workers\SubscribersStatsReport;
 use MailPoet\Cron\Workers\UnsubscribeTokens;
 use MailPoet\Cron\Workers\WooCommercePastOrders;
 use MailPoet\Cron\Workers\WooCommerceSync as WooCommerceSyncWorker;
@@ -149,6 +151,18 @@ class WordPress {
       'scheduled_in' => [self::SCHEDULED_IN_THE_FUTURE],
       'status' => [ScheduledTask::STATUS_SCHEDULED],
     ]);
+    // subscriber stats
+    $isAnyKeySpecified = Bridge::isPremiumKeySpecified() || $premiumKeySpecified;
+    $statsReportDueTasks = $this->getTasksCount([
+      'type' => SubscribersStatsReport::TASK_TYPE,
+      'scheduled_in' => [self::SCHEDULED_IN_THE_PAST],
+      'status' => ['null', ScheduledTask::STATUS_SCHEDULED],
+    ]);
+    $statsReportFutureTasks = $this->getTasksCount([
+      'type' => SubscribersStatsReport::TASK_TYPE,
+      'scheduled_in' => [self::SCHEDULED_IN_THE_FUTURE],
+      'status' => [ScheduledTask::STATUS_SCHEDULED],
+    ]);
     // stats notifications
     $statsNotificationsTasks = $this->getTasksCount([
       'type' => StatsNotificationsWorker::TASK_TYPE,
@@ -232,11 +246,19 @@ class WordPress {
       'status' => ['null', ScheduledTask::STATUS_SCHEDULED],
     ]);
 
+    // re-engagement emails scheduling;
+    $subscribersReEngagementSchedulingTasks = $this->getTasksCount([
+      'type' => ReEngagementEmailsScheduler::TASK_TYPE,
+      'scheduled_in' => [self::SCHEDULED_IN_THE_PAST],
+      'status' => ['null', ScheduledTask::STATUS_SCHEDULED],
+    ]);
+
     // check requirements for each worker
     $sendingQueueActive = (($scheduledQueues || $runningQueues) && !$sendingLimitReached && !$sendingIsPaused);
     $bounceSyncActive = ($mpSendingEnabled && ($bounceDueTasks || !$bounceFutureTasks));
     $sendingServiceKeyCheckActive = ($mpSendingEnabled && ($msskeycheckDueTasks || !$msskeycheckFutureTasks));
     $premiumKeyCheckActive = ($premiumKeySpecified && ($premiumKeycheckDueTasks || !$premiumKeycheckFutureTasks));
+    $subscribersStatsReportActive = ($isAnyKeySpecified || ($statsReportDueTasks || $statsReportFutureTasks));
     $migrationActive = !$migrationDisabled && ($migrationDueTasks || (!$migrationCompletedTasks && !$migrationFutureTasks));
     $beamerActive = $beamerDueChecks || !$beamerFutureChecks;
 
@@ -246,6 +268,7 @@ class WordPress {
       || $bounceSyncActive
       || $sendingServiceKeyCheckActive
       || $premiumKeyCheckActive
+      || $subscribersStatsReportActive
       || $statsNotificationsTasks
       || $autoStatsNotificationsTasks
       || $inactiveSubscribersTasks
@@ -258,6 +281,7 @@ class WordPress {
       || $subscriberEngagementScoreTasks
       || $subscribersCountCacheRecalculationTasks
       || $subscribersLastEngagementTasks
+      || $subscribersReEngagementSchedulingTasks
     );
   }
 

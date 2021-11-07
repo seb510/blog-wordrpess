@@ -24,6 +24,7 @@ jQuery(document).ready(function($) {
                 $("#more_posts").text("Загрузка...");
             },
             success: function(data){
+                console.log(data)
                 var $data = $(data);
                 if($data.length){
                     $("#ajax-posts").append($data);

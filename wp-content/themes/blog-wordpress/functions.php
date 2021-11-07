@@ -75,5 +75,5 @@ function more_post_ajax(){
     die($out);
 }
 
-add_action('wp_ajax_more_post_ajax', 'more_post_ajax');
+add_action('wp_ajax_nopriv_more_post_ajax', 'more_post_ajax');
 add_action('wp_ajax_more_post_ajax', 'more_post_ajax');

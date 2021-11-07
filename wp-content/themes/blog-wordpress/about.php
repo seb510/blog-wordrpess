@@ -7,15 +7,13 @@
 
     <main class="main">
         <section class="category-banner">
-            <h1 class="category-banner__title">О нас</h1>
+           <div class="container">
+               <h1 class="category-banner__title">О нас</h1>
+           </div>
         </section>
         <section class="content">
             <div class="container">
                 <h2 class="">Что мы делаем</h2>
-                <div class="container content__container">
-
-                    <?php get_sidebar() ?>
-                </div>
             </div>
         </section>
     </main>
