@@ -19,17 +19,22 @@
             <img src="<?php echo get_template_directory_uri(); ?>/assets/img/logo.svg" alt="Логотип Блога">
         </a>
         <?php }?>
-        <div class="header__right">
-            <?php
-            wp_nav_menu( array(
-                'theme_location' => 'my-custom-menu',
-                'container_class' => 'nav header__nav',
-                'container'       => 'nav',
-                'menu_class'      => 'nav__list list-reset',
-            ));
-            ?>
-            <li class="nav__item nav__item-search"><a href="#" class="nav__link search-link">Поиск</a></li>
-            <a href="tel:+7 (987) 887-87" class="phone">+7 (987) 887-87</a>
+        <div class="header__wrapper">
+            <div class="header__right">
+                <?php
+                wp_nav_menu( array(
+                    'theme_location' => 'my-custom-menu',
+                    'container_class' => 'nav header__nav',
+                    'container'       => 'nav',
+                    'menu_class'      => 'nav__list list-reset',
+                ));
+                ?>
+                <li class="nav__item nav__item-search"><a href="#" class="nav__link search-link">Поиск</a></li>
+                <a href="tel:+798788787" class="phone">+7 (987) 887-87</a>
+            </div>
+        </div>
+        <div class="menuToggle icon">
+            <div class="hamburger"></div>
         </div>
     </div>
     <div class="header-search">

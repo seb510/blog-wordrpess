@@ -12,9 +12,9 @@
         <?php
             wp_nav_menu( array(
                 'theme_location' => 'my-custom-menu',
-                'container_class' => 'nav header__nav',
+                'container_class' => 'nav footer__nav',
                 'container'       => 'nav',
-                'menu_class'      => 'nav__list list-reset',
+                'menu_class'      => 'footer-nav__list list-reset',
             ));
         ?>
         <small class="footer__copy">ООО “Организация”  <?php echo date('Y'); ?>. Все права защищены</small>

@@ -1,16 +1,31 @@
 jQuery(document).ready(function($) {
+
     $(document).on('click', '.search-link', function (){
         $('.header-search').fadeIn(600);
+        $('.menuToggle').removeClass('active');
+        $(this).removeClass("active");
+        $('body').removeClass('hidden');
+        $('.header__wrapper').slideUp();
     });
+
     $(document).on('click', '.header-search__close', function (){
         $('.header-search').fadeOut(600);
     });
 
     $('.nav__list').append($('.nav__item-search'));
 
+    $(document).on('click', '.menuToggle', function (){
+        $(this).toggleClass("active");
+        $('body').toggleClass('hidden');
+        $('.header__wrapper').slideToggle(300, function(){
+            if($(this).css('display') === "none"){
+                $(this).removeAttr('style');
+            }
+        });
+    })
+
     var ppp = 2; // Post per page
     var pageNumber = 1;
-
 
     function load_posts(){
         pageNumber++;
