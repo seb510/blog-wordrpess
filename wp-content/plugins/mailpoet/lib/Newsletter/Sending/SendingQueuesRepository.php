@@ -10,6 +10,8 @@ use MailPoet\Entities\NewsletterEntity;
 use MailPoet\Entities\ScheduledTaskEntity;
 use MailPoet\Entities\SendingQueueEntity;
 use MailPoet\Entities\SubscriberEntity;
+use MailPoet\WP\Functions as WPFunctions;
+use MailPoetVendor\Carbon\Carbon;
 use MailPoetVendor\Doctrine\ORM\EntityManager;
 
 /**
@@ -19,12 +21,17 @@ class SendingQueuesRepository extends Repository {
   /** @var ScheduledTaskSubscribersRepository */
   private $scheduledTaskSubscribersRepository;
 
+  /** @var WPFunctions */
+  private $wp;
+
   public function __construct(
     EntityManager $entityManager,
+    WPFunctions $wp,
     ScheduledTaskSubscribersRepository $scheduledTaskSubscribersRepository
   ) {
     parent::__construct($entityManager);
     $this->scheduledTaskSubscribersRepository = $scheduledTaskSubscribersRepository;
+    $this->wp = $wp;
   }
 
   protected function getEntityClassName() {
@@ -79,5 +86,38 @@ class SendingQueuesRepository extends Repository {
         ->setParameter('dateFrom', $dateFrom);
     }
     return $qb->getQuery()->getResult();
+  }
+
+  public function pause(SendingQueueEntity $queue): void {
+    if ($queue->getCountProcessed() !== $queue->getCountTotal()) {
+      $task = $queue->getTask();
+      if ($task instanceof ScheduledTaskEntity) {
+        $task->setStatus(ScheduledTaskEntity::STATUS_PAUSED);
+        $this->flush();
+      }
+    }
+  }
+
+  public function resume(SendingQueueEntity $queue): void {
+    $task = $queue->getTask();
+    if (!$task instanceof ScheduledTaskEntity) return;
+
+    if ($queue->getCountProcessed() === $queue->getCountTotal()) {
+      $processedAt = Carbon::createFromTimestamp($this->wp->currentTime('mysql'));
+      $task->setProcessedAt($processedAt);
+      $task->setStatus(ScheduledTaskEntity::STATUS_COMPLETED);
+      // Update also status of newsletter if necessary
+      $newsletter = $queue->getNewsletter();
+      if ($newsletter instanceof NewsletterEntity && $newsletter->canBeSetSent()) {
+        $newsletter->setStatus(NewsletterEntity::STATUS_SENT);
+      }
+      $this->flush();
+    } else {
+      $newsletter = $queue->getNewsletter();
+      if (!$newsletter instanceof NewsletterEntity) return;
+      $newsletter->setStatus(NewsletterEntity::STATUS_SENDING);
+      $task->setStatus(null);
+      $this->flush();
+    }
   }
 }

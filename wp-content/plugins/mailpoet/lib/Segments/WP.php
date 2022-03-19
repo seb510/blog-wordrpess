@@ -16,6 +16,7 @@ use MailPoet\Newsletter\Scheduler\WelcomeScheduler;
 use MailPoet\Settings\SettingsController;
 use MailPoet\Subscribers\ConfirmationEmailMailer;
 use MailPoet\Subscribers\Source;
+use MailPoet\Subscribers\SubscribersRepository;
 use MailPoet\WooCommerce\Helper as WooCommerceHelper;
 use MailPoet\WooCommerce\Subscription as WooCommerceSubscription;
 use MailPoet\WP\Functions as WPFunctions;
@@ -33,14 +34,19 @@ class WP {
   /** @var WooCommerceHelper */
   private $wooHelper;
 
+  /** @var SubscribersRepository */
+  private $subscribersRepository;
+
   public function __construct(
     WPFunctions $wp,
     WelcomeScheduler $welcomeScheduler,
-    WooCommerceHelper $wooHelper
+    WooCommerceHelper $wooHelper,
+    SubscribersRepository $subscribersRepository
   ) {
     $this->wp = $wp;
     $this->welcomeScheduler = $welcomeScheduler;
     $this->wooHelper = $wooHelper;
+    $this->subscribersRepository = $subscribersRepository;
   }
 
   public function synchronizeUser($wpUserId, $oldWpUserData = false) {
@@ -89,7 +95,8 @@ class WP {
     }
 
     // we want to mark a new subscriber as unsubscribed when the checkbox on Woo checkout is unchecked
-    if (isset($_POST[WooCommerceSubscription::CHECKOUT_OPTIN_PRESENCE_CHECK_INPUT_NAME])
+    if (
+      isset($_POST[WooCommerceSubscription::CHECKOUT_OPTIN_PRESENCE_CHECK_INPUT_NAME])
       && !isset($_POST[WooCommerceSubscription::CHECKOUT_OPTIN_INPUT_NAME])
     ) {
       $status = SubscriberEntity::STATUS_UNSUBSCRIBED;
@@ -146,7 +153,14 @@ class WP {
       if ($sendConfirmationEmail && ($subscriber->status === Subscriber::STATUS_UNCONFIRMED)) {
         /** @var ConfirmationEmailMailer $confirmationEmailMailer */
         $confirmationEmailMailer = ContainerWrapper::getInstance()->get(ConfirmationEmailMailer::class);
-        $confirmationEmailMailer->sendConfirmationEmailOnce($subscriber);
+        $subscriberEntity = $this->subscribersRepository->findOneById($subscriber->id);
+        if ($subscriberEntity instanceof SubscriberEntity) {
+          try {
+            $confirmationEmailMailer->sendConfirmationEmailOnce($subscriberEntity);
+          } catch (\Exception $e) {
+            // ignore errors
+          }
+        }
       }
 
       // welcome email

@@ -30,8 +30,8 @@ class MetaInfo {
     );
   }
 
-  public function getConfirmationMetaInfo(Subscriber $subscriber) {
-    return $this->makeMetaInfo('confirmation', $subscriber->status, $subscriber->source);
+  public function getConfirmationMetaInfo(SubscriberEntity $subscriber) {
+    return $this->makeMetaInfo('confirmation', $subscriber->getStatus(), $subscriber->getSource());
   }
 
   public function getNewSubscriberNotificationMetaInfo() {
@@ -60,7 +60,7 @@ class MetaInfo {
     return $this->makeMetaInfo($type, $subscriber->status, $subscriber->source);
   }
 
-  private function makeMetaInfo($emailType,  $subscriberStatus, $subscriberSource) {
+  private function makeMetaInfo($emailType, $subscriberStatus, $subscriberSource) {
     return [
       'email_type' => $emailType,
       'subscriber_status' => $subscriberStatus,

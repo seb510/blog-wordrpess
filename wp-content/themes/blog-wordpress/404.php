@@ -2,10 +2,10 @@
 
 <main class="main">
     <section class="not-found">
-        <h1 class="visually-hidden">Страница не найдена</h1>
+        <h1 class="visually-hidden">Сторінку не знайдено</h1>
         <div class="container not-found__container">
             <img src="<?php echo get_template_directory_uri(); ?>/assets/img/404.png" alt="" aria-hidden="true" class="not-found__img">
-            <h2 class="not-found__title blog-title">Что-то пошло не так...</h2>
+            <h2 class="not-found__title blog-title">Щось пішло не так...</h2>
             <a href="<?php echo home_url(); ?>" class="not-found__back">
                 <svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g clip-path="url(#clip0)">
@@ -19,7 +19,7 @@
                         </clipPath>
                     </defs>
                 </svg>
-                <span>Вернуться назад</span>
+                <span>Повернутися назад</span>
             </a>
         </div>
     </section>

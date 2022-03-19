@@ -17,7 +17,7 @@
                 'menu_class'      => 'footer-nav__list list-reset',
             ));
         ?>
-        <small class="footer__copy">ООО “Организация”  <?php echo date('Y'); ?>. Все права защищены</small>
+        <small class="footer__copy">ТОВ “Sebistiian”  <?php echo date('Y'); ?>. Всі права захищені</small>
     </div>
 </footer>
 <?php wp_footer(); ?>

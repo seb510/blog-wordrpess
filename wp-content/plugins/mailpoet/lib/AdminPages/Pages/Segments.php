@@ -8,19 +8,23 @@ if (!defined('ABSPATH')) exit;
 use MailPoet\AdminPages\PageRenderer;
 use MailPoet\API\JSON\ResponseBuilders\CustomFieldsResponseBuilder;
 use MailPoet\Cache\TransientCache;
+use MailPoet\Config\Installer;
 use MailPoet\Config\ServicesChecker;
 use MailPoet\CustomFields\CustomFieldsRepository;
 use MailPoet\Entities\DynamicSegmentFilterData;
+use MailPoet\Entities\SegmentEntity;
 use MailPoet\Listing\PageLimit;
 use MailPoet\Models\Newsletter;
 use MailPoet\Segments\SegmentDependencyValidator;
+use MailPoet\Segments\SegmentsRepository;
 use MailPoet\Services\Bridge;
-use MailPoet\Settings\SettingsController;
+use MailPoet\Settings\TrackingConfig;
 use MailPoet\Util\License\Features\Subscribers as SubscribersFeature;
 use MailPoet\WooCommerce\Helper as WooCommerceHelper;
 use MailPoet\WP\AutocompletePostListLoader as WPPostListLoader;
 use MailPoet\WP\Functions as WPFunctions;
 use MailPoetVendor\Carbon\Carbon;
+use MailPoetVendor\Doctrine\Common\Collections\Criteria;
 
 class Segments {
   /** @var PageRenderer */
@@ -44,9 +48,6 @@ class Segments {
   /** @var WPPostListLoader */
   private $wpPostListLoader;
 
-  /** @var SettingsController */
-  private $settings;
-
   /** @var SegmentDependencyValidator */
   private $segmentDependencyValidator;
 
@@ -59,6 +60,12 @@ class Segments {
   /** @var TransientCache */
   private $transientCache;
 
+  /** @var SegmentsRepository */
+  private $segmentsRepository;
+
+  /** @var TrackingConfig */
+  private $trackingConfig;
+
   public function __construct(
     PageRenderer $pageRenderer,
     PageLimit $listingPageLimit,
@@ -67,10 +74,11 @@ class Segments {
     WooCommerceHelper $woocommerceHelper,
     WPPostListLoader $wpPostListLoader,
     SubscribersFeature $subscribersFeature,
-    SettingsController $settings,
     CustomFieldsRepository $customFieldsRepository,
     CustomFieldsResponseBuilder $customFieldsResponseBuilder,
     SegmentDependencyValidator $segmentDependencyValidator,
+    SegmentsRepository $segmentsRepository,
+    TrackingConfig $trackingConfig,
     TransientCache $transientCache
   ) {
     $this->pageRenderer = $pageRenderer;
@@ -80,14 +88,18 @@ class Segments {
     $this->wp = $wp;
     $this->woocommerceHelper = $woocommerceHelper;
     $this->wpPostListLoader = $wpPostListLoader;
-    $this->settings = $settings;
     $this->segmentDependencyValidator = $segmentDependencyValidator;
     $this->customFieldsRepository = $customFieldsRepository;
     $this->customFieldsResponseBuilder = $customFieldsResponseBuilder;
     $this->transientCache = $transientCache;
+    $this->segmentsRepository = $segmentsRepository;
+    $this->trackingConfig = $trackingConfig;
   }
 
   public function render() {
+    $installer = new Installer(Installer::PREMIUM_PLUGIN_SLUG);
+    $pluginInformation = $installer->retrievePluginInformation();
+
     $data = [];
     $data['items_per_page'] = $this->listingPageLimit->getLimitPerPage('segments');
 
@@ -96,9 +108,21 @@ class Segments {
     $data['subscribers_limit'] = $this->subscribersFeature->getSubscribersLimit();
     $data['subscribers_limit_reached'] = $this->subscribersFeature->check();
     $data['has_valid_api_key'] = $this->subscribersFeature->hasValidApiKey();
+    $data['has_valid_premium_key'] = $this->subscribersFeature->hasValidPremiumKey();
     $data['subscriber_count'] = $this->subscribersFeature->getSubscribersCount();
     $data['has_premium_support'] = $this->subscribersFeature->hasPremiumSupport();
+    $data['link_premium'] = $this->wp->getSiteUrl(null, '/wp-admin/admin.php?page=mailpoet-upgrade');
     $data['mss_key_invalid'] = ($this->servicesChecker->isMailPoetAPIKeyValid() === false);
+
+    $data['current_wp_user_email'] = $this->wp->wpGetCurrentUser()->user_email;
+    $data['premium_plugin_active'] = $this->servicesChecker->isPremiumPluginActive();
+    $data['premium_plugin_installed'] = $data['premium_plugin_active'] || Installer::isPluginInstalled(Installer::PREMIUM_PLUGIN_SLUG);
+    $data['premium_plugin_download_url'] = $pluginInformation->download_link ?? null; // phpcs:ignore Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps
+    $data['premium_plugin_activation_url'] = $installer->generatePluginActivationUrl(Installer::PREMIUM_PLUGIN_PATH);
+    $data['plugin_partial_key'] = $this->servicesChecker->generatePartialApiKey();
+    $data['email_volume_limit_reached'] = $this->subscribersFeature->checkEmailVolumeLimitIsReached();
+    $data['email_volume_limit'] = $this->subscribersFeature->getEmailVolumeLimit();
+
     $customFields = $this->customFieldsRepository->findBy([], ['name' => 'asc']);
     $data['custom_fields'] = $this->customFieldsResponseBuilder->buildBatch($customFields);
 
@@ -115,9 +139,26 @@ class Segments {
       ->where('type', Newsletter::TYPE_STANDARD)
       ->orderByExpr('ISNULL(sent_at) DESC, sent_at DESC')->findArray();
 
+    $data['static_segments_list'] = [];
+    $criteria = new Criteria();
+    $criteria->where(Criteria::expr()->isNull('deletedAt'));
+    $criteria->andWhere(Criteria::expr()->neq('type', SegmentEntity::TYPE_DYNAMIC));
+    $criteria->orderBy(['name' => 'ASC']);
+    $segments = $this->segmentsRepository->matching($criteria);
+    foreach ($segments as $segment) {
+      $data['static_segments_list'][] = [
+        'id' => $segment->getId(),
+        'name' => $segment->getName(),
+        'type' => $segment->getType(),
+        'description' => $segment->getDescription(),
+      ];
+    }
+
+
     $data['product_categories'] = $this->wpPostListLoader->getWooCommerceCategories();
 
     $data['products'] = $this->wpPostListLoader->getProducts();
+    $data['membership_plans'] = $this->wpPostListLoader->getMembershipPlans();
     $data['subscription_products'] = $this->wpPostListLoader->getSubscriptionProducts();
     $data['is_woocommerce_active'] = $this->woocommerceHelper->isWooCommerceActive();
     $wcCountries = $this->woocommerceHelper->isWooCommerceActive() ? $this->woocommerceHelper->getAllowedCountries() : [];
@@ -127,12 +168,15 @@ class Segments {
         'code' => $code,
       ];
     }, array_keys($wcCountries), $wcCountries);
+    $data['can_use_woocommerce_memberships'] = $this->segmentDependencyValidator->canUseDynamicFilterType(
+      DynamicSegmentFilterData::TYPE_WOOCOMMERCE_MEMBERSHIP
+    );
     $data['can_use_woocommerce_subscriptions'] = $this->segmentDependencyValidator->canUseDynamicFilterType(
       DynamicSegmentFilterData::TYPE_WOOCOMMERCE_SUBSCRIPTION
     );
     $wooCurrencySymbol = $this->woocommerceHelper->isWooCommerceActive() ? $this->woocommerceHelper->getWoocommerceCurrencySymbol() : '';
     $data['woocommerce_currency_symbol'] = html_entity_decode($wooCurrencySymbol);
-    $data['tracking_enabled'] = $this->settings->get('tracking.enabled');
+    $data['tracking_config'] = $this->trackingConfig->getConfig();
     $subscribersCacheCreatedAt = $this->transientCache->getOldestCreatedAt(TransientCache::SUBSCRIBERS_STATISTICS_COUNT_KEY);
     $subscribersCacheCreatedAt = $subscribersCacheCreatedAt ?: Carbon::now();
     $data['subscribers_counts_cache_created_at'] = $subscribersCacheCreatedAt->format('Y-m-d\TH:i:sO');

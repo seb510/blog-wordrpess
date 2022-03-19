@@ -1,11 +1,11 @@
 jQuery(document).ready(function($) {
 
     $(document).on('click', '.search-link', function (){
-        $('.header-search').fadeIn(600);
+        $('.header-search').fadeIn(400);
     });
 
     $(document).on('click', '.header-search__close', function (){
-        $('.header-search').fadeOut(600);
+        $('.header-search').fadeOut(400);
     });
 
     $('.nav__list').append($('.nav__item-search'));
@@ -32,14 +32,14 @@ jQuery(document).ready(function($) {
             url: ajax_posts.ajaxurl,
             data: str,
             beforeSend:function (){
-                $("#more_posts").text("Загрузка...");
+                $("#more_posts").text("Завантаження...");
             },
             success: function(data){
                 console.log(data)
                 var $data = $(data);
                 if($data.length){
                     $("#ajax-posts").append($data);
-                    $("#more_posts").text('Показать еще');
+                    $("#more_posts").text('Показати ще');
                 } else{
                     $("#more_posts").fadeOut();
                 }

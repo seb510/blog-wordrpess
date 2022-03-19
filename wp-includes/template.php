@@ -411,7 +411,7 @@ function get_home_template() {
  * @return string Full path to front page template file.
  */
 function get_front_page_template() {
-	$templates = array( 'page-template.php' );
+	$templates = array( 'front-page.php' );
 
 	return get_query_template( 'frontpage', $templates );
 }

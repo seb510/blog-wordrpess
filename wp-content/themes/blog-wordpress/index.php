@@ -9,7 +9,7 @@ get_header();
     </section>
     <section class="content">
         <div class="container">
-            <h2 class="d-flex justify-center">Главные новости</h2>
+            <h2 class="d-flex justify-center">Головні новини</h2>
         </div>
         <div class="container content__container">
             <div class="posts">
@@ -68,7 +68,7 @@ get_header();
                 }
                 wp_reset_postdata(); ?>
                 </ul>
-                <div id="more_posts" class="btn load-more">Показать еще</div>
+                <div id="more_posts" class="btn load-more">Показати ще </div>
             </div>
             <?php get_sidebar() ?>
         </div>

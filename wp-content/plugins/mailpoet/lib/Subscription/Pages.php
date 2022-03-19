@@ -7,11 +7,15 @@ if (!defined('ABSPATH')) exit;
 
 use MailPoet\Config\Renderer as TemplateRenderer;
 use MailPoet\Entities\StatisticsUnsubscribeEntity;
+use MailPoet\Entities\SubscriberEntity;
+use MailPoet\Features\FeaturesController;
 use MailPoet\Form\AssetsController;
 use MailPoet\Models\Subscriber;
 use MailPoet\Models\SubscriberSegment;
 use MailPoet\Newsletter\Scheduler\WelcomeScheduler;
 use MailPoet\Settings\SettingsController;
+use MailPoet\Settings\TrackingConfig;
+use MailPoet\Statistics\Track\SubscriberHandler;
 use MailPoet\Statistics\Track\Unsubscribes;
 use MailPoet\Subscribers\LinkTokens;
 use MailPoet\Subscribers\NewSubscriberNotificationMailer;
@@ -66,8 +70,17 @@ class Pages {
   /** @var ManageSubscriptionFormRenderer */
   private $manageSubscriptionFormRenderer;
 
+  /** @var SubscriberHandler */
+  private $subscriberHandler;
+
   /** @var SubscribersRepository */
   private $subscribersRepository;
+
+  /** @var TrackingConfig */
+  private $trackingConfig;
+
+  /** @var FeaturesController */
+  private $featuresController;
 
   public function __construct(
     NewSubscriberNotificationMailer $newSubscriberNotificationSender,
@@ -81,7 +94,10 @@ class Pages {
     TemplateRenderer $templateRenderer,
     Unsubscribes $unsubscribesTracker,
     ManageSubscriptionFormRenderer $manageSubscriptionFormRenderer,
-    SubscribersRepository $subscribersRepository
+    SubscriberHandler $subscriberHandler,
+    SubscribersRepository $subscribersRepository,
+    TrackingConfig $trackingConfig,
+    FeaturesController $featuresController
   ) {
     $this->wp = $wp;
     $this->newSubscriberNotificationSender = $newSubscriberNotificationSender;
@@ -94,7 +110,10 @@ class Pages {
     $this->templateRenderer = $templateRenderer;
     $this->unsubscribesTracker = $unsubscribesTracker;
     $this->manageSubscriptionFormRenderer = $manageSubscriptionFormRenderer;
+    $this->subscriberHandler = $subscriberHandler;
     $this->subscribersRepository = $subscribersRepository;
+    $this->trackingConfig = $trackingConfig;
+    $this->featuresController = $featuresController;
   }
 
   public function init($action = false, $data = [], $initShortcodes = false, $initPageFilters = false) {
@@ -166,6 +185,9 @@ class Pages {
     $this->subscriber->unconfirmedData = null;
     $this->subscriber->save();
 
+    // start subscriber tracking
+    $this->subscriberHandler->identifyByEmail($this->subscriber->email);
+
     if ($this->subscriber->getErrors() !== false) {
       return false;
     }
@@ -181,6 +203,17 @@ class Pages {
       );
     }
 
+    // when global status changes to subscribed, fire subscribed hook for all subscribed segments
+    if ($this->featuresController->isSupported(FeaturesController::AUTOMATION)) {
+      $subscriber = $this->subscribersRepository->findOneById($this->subscriber->id);
+      $segments = $subscriber ? $subscriber->getSubscriberSegments() : [];
+      foreach ($segments as $subscriberSegment) {
+        if ($subscriberSegment->getStatus() === SubscriberEntity::STATUS_SUBSCRIBED) {
+          $this->wp->doAction('mailpoet_segment_subscribed', $subscriberSegment);
+        }
+      }
+    }
+
     // Send new subscriber notification only when status changes to subscribed or there are unconfirmed data to avoid spamming
     if ($originalStatus !== Subscriber::STATUS_SUBSCRIBED || $subscriberData !== null) {
       $this->newSubscriberNotificationSender->send($this->subscriber, $subscriberSegments);
@@ -193,11 +226,12 @@ class Pages {
   }
 
   public function unsubscribe() {
-    if (!$this->isPreview()
+    if (
+      !$this->isPreview()
       && ($this->subscriber !== null)
       && ($this->subscriber->status !== Subscriber::STATUS_UNSUBSCRIBED)
     ) {
-      if ((bool)$this->settings->get('tracking.enabled') && isset($this->data['queueId'])) {
+      if ($this->trackingConfig->isEmailTrackingEnabled() && isset($this->data['queueId'])) {
         $this->unsubscribesTracker->track(
           (int)$this->subscriber->id,
           StatisticsUnsubscribeEntity::SOURCE_NEWSLETTER,

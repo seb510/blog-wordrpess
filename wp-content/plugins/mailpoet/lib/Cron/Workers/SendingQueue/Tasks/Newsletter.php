@@ -18,7 +18,7 @@ use MailPoet\Newsletter\Links\Links as NewsletterLinks;
 use MailPoet\Newsletter\NewslettersRepository;
 use MailPoet\Newsletter\Renderer\PostProcess\OpenTracking;
 use MailPoet\Newsletter\Renderer\Renderer;
-use MailPoet\Settings\SettingsController;
+use MailPoet\Settings\TrackingConfig;
 use MailPoet\Statistics\GATracking;
 use MailPoet\Util\Helpers;
 use MailPoet\WP\Emoji;
@@ -61,8 +61,8 @@ class Newsletter {
     GATracking $gaTracking = null,
     Emoji $emoji = null
   ) {
-    $settings = SettingsController::getInstance();
-    $this->trackingEnabled = (boolean)$settings->get('tracking.enabled');
+    $trackingConfig = ContainerWrapper::getInstance()->get(TrackingConfig::class);
+    $this->trackingEnabled = $trackingConfig->isEmailTrackingEnabled();
     if ($wp === null) {
       $wp = new WPFunctions;
     }
@@ -150,7 +150,8 @@ class Newsletter {
       $renderedNewsletter = $this->gaTracking->applyGATracking($renderedNewsletter, $newsletter);
     }
     // check if this is a post notification and if it contains at least 1 ALC post
-    if ($newsletter->type === NewsletterModel::TYPE_NOTIFICATION_HISTORY &&
+    if (
+      $newsletter->type === NewsletterModel::TYPE_NOTIFICATION_HISTORY &&
       $this->postsTask->getAlcPostsCount($renderedNewsletter, $newsletter) === 0
     ) {
       // delete notification history record since it will never be sent
@@ -175,7 +176,7 @@ class Newsletter {
     );
     // if the rendered subject is empty, use a default subject,
     // having no subject in a newsletter is considered spammy
-    if (empty(trim($sendingTask->newsletterRenderedSubject))) {
+    if (empty(trim((string)$sendingTask->newsletterRenderedSubject))) {
       $sendingTask->newsletterRenderedSubject = WPFunctions::get()->__('No subject', 'mailpoet');
     }
     $renderedNewsletter = $this->emoji->encodeEmojisInBody($renderedNewsletter);
@@ -235,7 +236,8 @@ class Newsletter {
 
   public function markNewsletterAsSent($newsletter, $queue) {
     // if it's a standard or notification history newsletter, update its status
-    if ($newsletter->type === NewsletterModel::TYPE_STANDARD ||
+    if (
+      $newsletter->type === NewsletterModel::TYPE_STANDARD ||
        $newsletter->type === NewsletterModel::TYPE_NOTIFICATION_HISTORY
     ) {
       $newsletter->status = NewsletterModel::STATUS_SENT;

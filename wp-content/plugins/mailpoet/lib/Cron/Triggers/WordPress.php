@@ -5,6 +5,7 @@ namespace MailPoet\Cron\Triggers;
 if (!defined('ABSPATH')) exit;
 
 
+use MailPoet\Config\ServicesChecker;
 use MailPoet\Cron\CronHelper;
 use MailPoet\Cron\Workers\AuthorizedSendingEmailsCheck;
 use MailPoet\Cron\Workers\Beamer as BeamerWorker;
@@ -12,6 +13,7 @@ use MailPoet\Cron\Workers\Bounce as BounceWorker;
 use MailPoet\Cron\Workers\InactiveSubscribers;
 use MailPoet\Cron\Workers\KeyCheck\PremiumKeyCheck as PremiumKeyCheckWorker;
 use MailPoet\Cron\Workers\KeyCheck\SendingServiceKeyCheck as SendingServiceKeyCheckWorker;
+use MailPoet\Cron\Workers\NewsletterTemplateThumbnails;
 use MailPoet\Cron\Workers\ReEngagementEmailsScheduler;
 use MailPoet\Cron\Workers\Scheduler as SchedulerWorker;
 use MailPoet\Cron\Workers\SendingQueue\Migration as MigrationWorker;
@@ -53,16 +55,21 @@ class WordPress {
   /** @var WPFunctions */
   private $wp;
 
+  /** @var ServicesChecker */
+  private $serviceChecker;
+
   public function __construct(
     CronHelper $cronHelper,
     MailPoet $mailpoetTrigger,
     SettingsController $settings,
+    ServicesChecker $serviceChecker,
     WPFunctions $wp
   ) {
     $this->mailpoetTrigger = $mailpoetTrigger;
     $this->settings = $settings;
     $this->wp = $wp;
     $this->cronHelper = $cronHelper;
+    $this->serviceChecker = $serviceChecker;
   }
 
   public function run() {
@@ -152,7 +159,7 @@ class WordPress {
       'status' => [ScheduledTask::STATUS_SCHEDULED],
     ]);
     // subscriber stats
-    $isAnyKeySpecified = Bridge::isPremiumKeySpecified() || $premiumKeySpecified;
+    $isAnyKeyValid = $this->serviceChecker->getAnyValidKey();
     $statsReportDueTasks = $this->getTasksCount([
       'type' => SubscribersStatsReport::TASK_TYPE,
       'scheduled_in' => [self::SCHEDULED_IN_THE_PAST],
@@ -253,12 +260,19 @@ class WordPress {
       'status' => ['null', ScheduledTask::STATUS_SCHEDULED],
     ]);
 
+    // newsletter template thumbnails
+    $newsletterTemplateThumbnailsTasks = $this->getTasksCount([
+      'type' => NewsletterTemplateThumbnails::TASK_TYPE,
+      'scheduled_in' => [self::SCHEDULED_IN_THE_PAST],
+      'status' => ['null', ScheduledTask::STATUS_SCHEDULED],
+    ]);
+
     // check requirements for each worker
     $sendingQueueActive = (($scheduledQueues || $runningQueues) && !$sendingLimitReached && !$sendingIsPaused);
     $bounceSyncActive = ($mpSendingEnabled && ($bounceDueTasks || !$bounceFutureTasks));
     $sendingServiceKeyCheckActive = ($mpSendingEnabled && ($msskeycheckDueTasks || !$msskeycheckFutureTasks));
     $premiumKeyCheckActive = ($premiumKeySpecified && ($premiumKeycheckDueTasks || !$premiumKeycheckFutureTasks));
-    $subscribersStatsReportActive = ($isAnyKeySpecified || ($statsReportDueTasks || $statsReportFutureTasks));
+    $subscribersStatsReportActive = ($isAnyKeyValid && ($statsReportDueTasks || !$statsReportFutureTasks));
     $migrationActive = !$migrationDisabled && ($migrationDueTasks || (!$migrationCompletedTasks && !$migrationFutureTasks));
     $beamerActive = $beamerDueChecks || !$beamerFutureChecks;
 
@@ -282,6 +296,7 @@ class WordPress {
       || $subscribersCountCacheRecalculationTasks
       || $subscribersLastEngagementTasks
       || $subscribersReEngagementSchedulingTasks
+      || $newsletterTemplateThumbnailsTasks
     );
   }
 
@@ -326,7 +341,7 @@ class WordPress {
     $type = $options['type'];
     foreach ($options['scheduled_in'] as $scheduledIn) {
       foreach ($options['status'] as $status) {
-        if (! empty($this->tasksCounts[$type][$scheduledIn][$status])) {
+        if (!empty($this->tasksCounts[$type][$scheduledIn][$status])) {
           $count += $this->tasksCounts[$type][$scheduledIn][$status];
         }
       }

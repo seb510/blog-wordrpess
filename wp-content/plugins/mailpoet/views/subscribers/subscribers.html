@@ -1,6 +1,7 @@
 <% extends 'layout.html' %>
 
 <% block content %>
+<% include('shared_config.html') %>
   <div id="subscribers_container"></div>
 
   <script type="text/javascript">
@@ -11,7 +12,7 @@
     var mailpoet_date_formats = <%= json_encode(date_formats) %>;
     var mailpoet_premium_active = <%= json_encode(premium_plugin_active) %>;
     var mailpoet_max_confirmation_emails = <%= max_confirmation_emails %>;
-    var mailpoet_tracking_enabled = <%= json_encode(tracking_enabled) %>;
+    var mailpoet_tracking_config = <%= json_encode(tracking_config) %>;
     var mailpoet_beacon_articles = [
       '57ce07ffc6979108399a044b',
       '57ce079f903360649f6e56fc',
@@ -23,11 +24,13 @@
     var mailpoet_subscribers_limit = <%= subscribers_limit ? subscribers_limit : 'false'  %>;
     var mailpoet_subscribers_limit_reached = <%= subscribers_limit_reached ? 'true' : 'false' %>;
     var mailpoet_has_valid_api_key = <%= has_valid_api_key ? 'true' : 'false' %>;
+    var mailpoet_has_valid_premium_key = <%= has_valid_premium_key ? 'true' : 'false' %>;
     var mailpoet_mss_key_invalid = <%= mss_key_invalid ? 'true' : 'false' %>;
     var mailpoet_subscribers_count = <%= subscriber_count %>;
     var mailpoet_has_premium_support = <%= has_premium_support ? 'true' : 'false' %>;
     var mailpoet_premium_link = <%= json_encode(link_premium) %>;
     var mailpoet_subscribers_counts_cache_created_at = <%= json_encode(subscribers_counts_cache_created_at) %>;
+    var mailpoet_current_wp_user_email = '<%= current_wp_user_email %>';
   </script>
 <% endblock %>
 
@@ -66,9 +69,9 @@
     'currentPage': __('Current Page'),
     'pageOutOf': __('of'),
     'numberOfItemsSingular': __('1 item'),
-    'numberOfItemsMultiple': __('%$1d items'),
+    'numberOfItemsMultiple': __('%1$d items'),
 
-    'subscribersInPlanCount': _x('%$1d / %$2d', 'count / total subscribers'),
+    'subscribersInPlanCount': _x('%1$d / %2$d', 'count / total subscribers'),
     'subscribersInPlan': _x('%s subscribers in your plan', 'number of subscribers in a sending plan'),
     'subscribersInPlanTooltip': __('This is the total of subscribed, unconfirmed and inactive subscribers we count when you are sending with MailPoet Sending Service. The count excludes unsubscribed and bounced (invalid) email addresses.'),
 
@@ -82,15 +85,15 @@
     'inactive': __('Inactive'),
     'bounced': __('Bounced'),
     'selectList': __('Select a list'),
-    'unsubscribedOn': __('Unsubscribed on %$1s'),
+    'unsubscribedOn': __('Unsubscribed on %1$s'),
     'subscriberUpdated': __('Subscriber was updated successfully!'),
     'subscriberAdded': __('Subscriber was added successfully!'),
     'welcomeEmailTip': __('This subscriber will receive Welcome Emails if any are active for your lists.'),
 
-    'unsubscribedNewsletter': __('Unsubscribed at %$1d, from newsletter [link].'),
-    'unsubscribedManage': __('Unsubscribed at %$1d, using the “Manage my Subscription” page.'),
-    'unsubscribedAdmin': __('Unsubscribed at %$1d, by admin "%$2d".'),
-    'unsubscribedUnknown': __('Unsubscribed at %$1d, for an unknown reason.'),
+    'unsubscribedNewsletter': __('Unsubscribed at %1$d, from newsletter [link].'),
+    'unsubscribedManage': __('Unsubscribed at %1$d, using the “Manage my Subscription” page.'),
+    'unsubscribedAdmin': __('Unsubscribed at %1$d, by admin "%2$d".'),
+    'unsubscribedUnknown': __('Unsubscribed at %1$d, for an unknown reason.'),
 
     'subscriber': __('Subscriber'),
     'status': __('Status'),
@@ -99,21 +102,21 @@
     'subscribedOn': __('Subscribed on'),
     'lastModifiedOn': __('Last modified on'),
     'oneSubscriberTrashed': __('1 subscriber was moved to the trash.'),
-    'multipleSubscribersTrashed': __('%$1d subscribers were moved to the trash.'),
+    'multipleSubscribersTrashed': __('%1$d subscribers were moved to the trash.'),
     'oneSubscriberDeleted': __('1 subscriber was permanently deleted.'),
-    'multipleSubscribersDeleted': __('%$1d subscribers were permanently deleted.'),
+    'multipleSubscribersDeleted': __('%1$d subscribers were permanently deleted.'),
     'oneSubscriberRestored': __('1 subscriber has been restored from the trash.'),
-    'multipleSubscribersRestored': __('%$1d subscribers have been restored from the trash.'),
+    'multipleSubscribersRestored': __('%1$d subscribers have been restored from the trash.'),
     'moveToList': __('Move to list...'),
-    'multipleSubscribersMovedToList': __('%$1d subscribers were moved to list <strong>%$2s</strong>'),
+    'multipleSubscribersMovedToList': __('%1$d subscribers were moved to list <strong>%2$s</strong>'),
     'addToList': __('Add to list...'),
-    'multipleSubscribersAddedToList': __('%$1d subscribers were added to list <strong>%$2s</strong>.'),
+    'multipleSubscribersAddedToList': __('%1$d subscribers were added to list <strong>%2$s</strong>.'),
     'removeFromList': __('Remove from list...'),
-    'multipleSubscribersRemovedFromList': __('%$1d subscribers were removed from list <strong>%$2s</strong>'),
+    'multipleSubscribersRemovedFromList': __('%1$d subscribers were removed from list <strong>%2$s</strong>'),
     'removeFromAllLists': __('Remove from all lists'),
     'unsubscribe': _x('Unsubscribe', 'This is an action on the subscribers page'),
     'unsubscribeConfirm': __('This action will unsubscribe %s subscribers from all lists. This action cannot be undone. Are you sure, you want to continue?'),
-    'multipleSubscribersRemovedFromAllLists': __('%$1d subscribers were removed from all lists.'),
+    'multipleSubscribersRemovedFromAllLists': __('%1$d subscribers were removed from all lists.'),
     'resendConfirmationEmail': __('Resend confirmation email'),
     'oneConfirmationEmailSent': __('1 confirmation email has been sent.'),
     'listsToWhichSubscriberWasSubscribed': __('Lists to which the subscriber was subscribed.'),
@@ -143,8 +146,13 @@
     'premiumRequired': __('Learn more about how each of your subscribers is engaging with your emails. See which emails they’ve opened, the links they clicked. If you’re a WooCommerce store owner, you’ll also see any purchases made as a result of your emails. [link]Learn more[/link].'),
     'freeLimitReached': __('Congratulations, you now have [subscribersCount] subscribers! Our free version is limited to [subscribersLimit] subscribers. You need to upgrade now to be able to continue using MailPoet.'),
     'planLimitReached': __('Congratulations, you now have [subscribersCount] subscribers! Your plan is limited to [subscribersLimit] subscribers. You need to upgrade now to be able to continue using MailPoet.'),
-    'premiumBannerCtaFree': __('Sign Up for Free'),
+    'premiumBannerCtaFree': __('Upgrade'),
     'premiumBannerCtaUpgrade': __('Upgrade Now'),
+    'premiumFeatureDescription':  __('Your current MailPoet plan includes advanced features, but they require the MailPoet Premium plugin to be installed and activated.'),
+    'premiumFeatureButtonDownloadPremium':  __('Download MailPoet Premium plugin'),
+    'premiumFeatureButtonActivatePremium':  __('Activate MailPoet Premium plugin'),
+    'premiumFeatureDescriptionSubscribersLimitReached':  __('Congratulations, you now have [subscribersCount] subscribers! Your plan is limited to [subscribersLimit] subscribers. You need to upgrade now to be able to continue using MailPoet.'),
+    'premiumFeatureButtonUpgradePlan':  __('Upgrade your plan'),
     'columnAction': _x('Action', 'Table column label for subscriber actions e.g. email open, link clicked'),
     'columnActionOn': _x('Action on', 'Table column label for date when subscriber action happened'),
     'columnCount': _x('Count', 'Table column label for count of subscriber actions'),
@@ -162,8 +170,7 @@
     'tooltipAverage': __('Read 20% or fewer of sent emails'),
     'engagementScoreDescription': __('Average percent of emails subscribers read in the last year'),
 
-    'subscribersCountWereCalculated': __('Lists and Segments subscribers counts were calculated'),
-    'subscribersMinutesAgo': __('minutes ago'),
+    'subscribersCountWereCalculatedWithMinutesAgo': __('Lists and Segments subscribers counts were calculated <abbr>{$mins} minutes ago</abbr>'),
     'recalculateNow': __('Recalculate now'),
   }) %>
 <% endblock %>

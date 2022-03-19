@@ -18,6 +18,7 @@ use MailPoet\NewsletterTemplates\NewsletterTemplatesRepository;
 use MailPoet\Segments\SegmentsSimpleListRepository;
 use MailPoet\Services\Bridge;
 use MailPoet\Settings\SettingsController;
+use MailPoet\Settings\TrackingConfig;
 use MailPoet\Settings\UserFlagsController;
 use MailPoet\Util\Installation;
 use MailPoet\Util\License\Features\Subscribers as SubscribersFeature;
@@ -71,6 +72,9 @@ class Newsletters {
   /** @var SegmentsSimpleListRepository */
   private $segmentsListRepository;
 
+  /** @var TrackingConfig */
+  private $trackingConfig;
+
   public function __construct(
     PageRenderer $pageRenderer,
     PageLimit $listingPageLimit,
@@ -85,7 +89,8 @@ class Newsletters {
     NewsletterTemplatesRepository $newsletterTemplatesRepository,
     WPPostListLoader $wpPostListLoader,
     AutomaticEmails $automaticEmails,
-    SegmentsSimpleListRepository $segmentsListRepository
+    SegmentsSimpleListRepository $segmentsListRepository,
+    TrackingConfig $trackingConfig
   ) {
     $this->pageRenderer = $pageRenderer;
     $this->listingPageLimit = $listingPageLimit;
@@ -101,10 +106,13 @@ class Newsletters {
     $this->automaticEmails = $automaticEmails;
     $this->wpPostListLoader = $wpPostListLoader;
     $this->segmentsListRepository = $segmentsListRepository;
+    $this->trackingConfig = $trackingConfig;
   }
 
   public function render() {
     global $wp_roles; // phpcs:ignore Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps
+    $installer = new Installer(Installer::PREMIUM_PLUGIN_SLUG);
+    $pluginInformation = $installer->retrievePluginInformation();
 
     $data = [];
 
@@ -116,6 +124,7 @@ class Newsletters {
     $data['has_mss_key_specified'] = Bridge::isMSSKeySpecified();
     $data['mss_key_pending_approval'] = $this->servicesChecker->isMailPoetAPIKeyPendingApproval();
     $data['current_wp_user'] = $this->wp->wpGetCurrentUser()->to_array();
+    $data['current_wp_user_email'] = $this->wp->wpGetCurrentUser()->user_email;
     $data['current_wp_user_firstname'] = $this->wp->wpGetCurrentUser()->user_firstname;
     $data['site_url'] = $this->wp->siteUrl();
     $data['roles'] = $wp_roles->get_names(); // phpcs:ignore Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps
@@ -130,7 +139,10 @@ class Newsletters {
 
     $dateTime = new DateTime();
     $data['current_date'] = $dateTime->getCurrentDate(DateTime::DEFAULT_DATE_FORMAT);
+    $data['tomorrow_date'] = $dateTime->getCurrentDateTime()->modify( "+1 day" )
+      ->format( DateTime::DEFAULT_DATE_FORMAT );
     $data['current_time'] = $dateTime->getCurrentTime();
+    $data['current_date_time'] = $dateTime->getCurrentDateTime()->format(DateTime::DEFAULT_DATE_TIME_FORMAT);
     $data['schedule_time_of_day'] = $dateTime->getTimeInterval(
       '00:00:00',
       '+1 hour',
@@ -139,7 +151,7 @@ class Newsletters {
     $data['mailpoet_main_page'] = $this->wp->adminUrl('admin.php?page=' . Menu::MAIN_PAGE_SLUG);
     $data['show_congratulate_after_first_newsletter'] = isset($data['settings']['show_congratulate_after_first_newsletter']) ? $data['settings']['show_congratulate_after_first_newsletter'] : 'false';
 
-    $data['tracking_enabled'] = $this->settings->get('tracking.enabled');
+    $data['tracking_config'] = $this->trackingConfig->getConfig();
     $data['premium_plugin_active'] = License::getLicense();
     $data['is_woocommerce_active'] = $this->woocommerceHelper->isWooCommerceActive();
     $data['is_mailpoet_update_available'] = array_key_exists(Env::$pluginPath, $this->wp->getPluginUpdates());
@@ -147,6 +159,13 @@ class Newsletters {
     $data['newsletters_count'] = Newsletter::count();
     $data['mailpoet_feature_flags'] = $this->featuresController->getAllFlags();
     $data['transactional_emails_opt_in_notice_dismissed'] = $this->userFlags->get('transactional_emails_opt_in_notice_dismissed');
+    $data['has_premium_support'] = $this->subscribersFeature->hasPremiumSupport();
+    $data['premium_plugin_installed'] = $data['premium_plugin_active'] || Installer::isPluginInstalled(Installer::PREMIUM_PLUGIN_SLUG);
+    $data['premium_plugin_download_url'] = $pluginInformation->download_link ?? null; // phpcs:ignore Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps
+    $data['premium_plugin_activation_url'] = $installer->generatePluginActivationUrl(Installer::PREMIUM_PLUGIN_PATH);
+    $data['plugin_partial_key'] = $this->servicesChecker->generatePartialApiKey();
+    $data['email_volume_limit_reached'] = $this->subscribersFeature->checkEmailVolumeLimitIsReached();
+    $data['email_volume_limit'] = $this->subscribersFeature->getEmailVolumeLimit();
 
     if (!$data['premium_plugin_active']) {
       $data['free_premium_subscribers_limit'] = License::FREE_PREMIUM_SUBSCRIBERS_LIMIT;

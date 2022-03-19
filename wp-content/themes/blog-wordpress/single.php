@@ -44,7 +44,7 @@ get_header();
                                             <rect width="10" height="10" fill="white" transform="matrix(-1 0 0 1 10 0.5)" />
                                         </clipPath>
                                     </defs>
-                                </svg><span>Предыдущая новость</span></a>' . "\n";
+                                </svg><span>Попередня новина</span></a>' . "\n";
                             }
 
                             $next_post = get_next_post();
@@ -66,7 +66,7 @@ get_header();
 	</main>
     <?php }
         else {
-        echo "<h2>Записей нет.</h2>";
+        echo "<h2>Записів немає.</h2>";
     } ?>
 
 <?php get_footer()?>

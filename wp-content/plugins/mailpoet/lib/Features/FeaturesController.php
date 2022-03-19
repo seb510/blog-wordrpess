@@ -8,12 +8,12 @@ if (!defined('ABSPATH')) exit;
 use MailPoetVendor\Doctrine\DBAL\Exception\TableNotFoundException;
 
 class FeaturesController {
-  const RE_ENGAGEMENT_EMAIL = 're-engagement-email';
+  public const AUTOMATION = 'automation';
 
   // Define feature defaults in the array below in the following form:
   //   self::FEATURE_NAME_OF_FEATURE => true,
   private $defaults = [
-    self::RE_ENGAGEMENT_EMAIL => false,
+    self::AUTOMATION => false,
   ];
 
   /** @var array */

@@ -46,8 +46,8 @@ get_header(); ?>
                     </div>
                 <?php else : ?>
                     <div class="container search-blocks__container">
-                        <h1 class="search-blocks__title blog-title">Результаты поиска</h1>
-                        <span class="not-found-text">Ничего не найдено</span>
+                        <h1 class="search-blocks__title blog-title">Результати пошук</h1>
+                        <span class="not-found-text">Нічого не знайдено</span>
                     </div>
                 <?php endif; ?>
                 <?php get_sidebar(); ?>

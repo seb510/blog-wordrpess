@@ -10,9 +10,9 @@ use MailPoet\Entities\SegmentEntity;
 use MailPoet\Entities\SubscriberCustomFieldEntity;
 use MailPoet\Entities\SubscriberEntity;
 use MailPoet\Entities\SubscriberSegmentEntity;
-use MailPoet\Entities\UserAgentEntity;
 use MailPoet\WP\Functions as WPFunctions;
 use MailPoetVendor\Carbon\Carbon;
+use MailPoetVendor\Carbon\CarbonImmutable;
 use MailPoetVendor\Doctrine\DBAL\Connection;
 use MailPoetVendor\Doctrine\ORM\EntityManager;
 use MailPoetVendor\Doctrine\ORM\Query\Expr\Join;
@@ -322,16 +322,13 @@ class SubscribersRepository extends Repository {
       ->getResult();
   }
 
-  public function maybeUpdateLastEngagement(SubscriberEntity $subscriberEntity, ?UserAgentEntity $userAgent = null): void {
-    if ($userAgent instanceof UserAgentEntity && $userAgent->getUserAgentType() === UserAgentEntity::USER_AGENT_TYPE_MACHINE) {
-      return;
-    }
-    $now = Carbon::createFromTimestamp((int)$this->wp->currentTime('timestamp'));
+  public function maybeUpdateLastEngagement(SubscriberEntity $subscriberEntity): void {
+    $now = CarbonImmutable::createFromTimestamp((int)$this->wp->currentTime('timestamp'));
     // Do not update engagement if was recently updated to avoid unnecessary updates in DB
     if ($subscriberEntity->getLastEngagementAt() && $subscriberEntity->getLastEngagementAt() > $now->subMinute()) {
       return;
     }
-    // Update last engagement for human (and also unknown) user agent
+    // Update last engagement
     $subscriberEntity->setLastEngagementAt($now);
     $this->flush();
   }

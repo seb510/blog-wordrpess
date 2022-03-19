@@ -6,12 +6,12 @@ if (!defined('ABSPATH')) exit;
 
 
 use Exception;
-use InvalidArgumentException;
 use MailPoet\API\JSON\Endpoint as APIEndpoint;
 use MailPoet\API\JSON\Error as APIError;
 use MailPoet\API\JSON\Response;
 use MailPoet\API\JSON\ResponseBuilders\SegmentsResponseBuilder;
 use MailPoet\Config\AccessControl;
+use MailPoet\ConflictException;
 use MailPoet\Cron\CronWorkerScheduler;
 use MailPoet\Cron\Workers\WooCommerceSync;
 use MailPoet\Doctrine\Validator\ValidationException;
@@ -126,11 +126,11 @@ class Segments extends APIEndpoint {
       $segment = $this->segmentSavecontroller->save($data);
     } catch (ValidationException $exception) {
       return $this->badRequest([
-        APIError::BAD_REQUEST  => __('Please specify a name.', 'mailpoet'),
+        APIError::BAD_REQUEST => __('Please specify a name.', 'mailpoet'),
       ]);
-    } catch (InvalidArgumentException $exception) {
+    } catch (ConflictException $exception) {
       return $this->badRequest([
-        APIError::BAD_REQUEST  => __('Another record already exists. Please specify a different "name".', 'mailpoet'),
+        APIError::BAD_REQUEST => __('Another record already exists. Please specify a different "name".', 'mailpoet'),
       ]);
     }
     $response = $this->segmentsResponseBuilder->build($segment);
@@ -186,9 +186,9 @@ class Segments extends APIEndpoint {
     if (isset($activelyUsedNewslettersSubjects[$segment->getId()])) {
       return $this->badRequest([
         APIError::BAD_REQUEST => str_replace(
-          '%$1s',
+          '%1$s',
           "'" . join("', '", $activelyUsedNewslettersSubjects[$segment->getId()] ) . "'",
-          _x('List cannot be deleted because it’s used for %$1s email', 'Alert shown when trying to delete segment, which is assigned to any automatic emails.', 'mailpoet')
+          _x('List cannot be deleted because it’s used for %1$s email', 'Alert shown when trying to delete segment, which is assigned to any automatic emails.', 'mailpoet')
         ),
       ]);
     }
@@ -197,11 +197,11 @@ class Segments extends APIEndpoint {
     if (isset($activelyUsedFormNames[$segment->getId()])) {
       return $this->badRequest([
         APIError::BAD_REQUEST => str_replace(
-          '%$1s',
+          '%1$s',
           "'" . join("', '", $activelyUsedFormNames[$segment->getId()] ) . "'",
           _nx(
-            'List cannot be deleted because it’s used for %$1s form',
-            'List cannot be deleted because it’s used for %$1s forms',
+            'List cannot be deleted because it’s used for %1$s form',
+            'List cannot be deleted because it’s used for %1$s forms',
             count($activelyUsedFormNames[$segment->getId()]),
             'Alert shown when trying to delete segment, when it is assigned to a form.',
             'mailpoet'

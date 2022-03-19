@@ -148,6 +148,12 @@ class SubscriberEntity {
   private $lastEngagementAt;
 
   /**
+   * @ORM\Column(type="datetimetz", nullable=true)
+   * @var DateTimeInterface|null
+   */
+  private $woocommerceSyncedAt;
+
+  /**
    * @ORM\OneToMany(targetEntity="MailPoet\Entities\SubscriberSegmentEntity", mappedBy="subscriber", orphanRemoval=true)
    * @var Collection<int, SubscriberSegmentEntity>
    */
@@ -254,13 +260,15 @@ class SubscriberEntity {
    * @param string $status
    */
   public function setStatus($status) {
-    if (!in_array($status, [
-      self::STATUS_BOUNCED,
-      self::STATUS_INACTIVE,
-      self::STATUS_SUBSCRIBED,
-      self::STATUS_UNCONFIRMED,
-      self::STATUS_UNSUBSCRIBED,
-    ])) {
+    if (
+      !in_array($status, [
+        self::STATUS_BOUNCED,
+        self::STATUS_INACTIVE,
+        self::STATUS_SUBSCRIBED,
+        self::STATUS_UNCONFIRMED,
+        self::STATUS_UNSUBSCRIBED,
+      ])
+    ) {
       throw new \InvalidArgumentException("Invalid status '{$status}' given to subscriber!");
     }
     $this->status = $status;
@@ -347,16 +355,18 @@ class SubscriberEntity {
    * @param string $source
    */
   public function setSource($source) {
-    if (!in_array($source, [
-      'api',
-      'form',
-      'unknown',
-      'imported',
-      'administrator',
-      'wordpress_user',
-      'woocommerce_user',
-      'woocommerce_checkout',
-    ])) {
+    if (
+      !in_array($source, [
+        'api',
+        'form',
+        'unknown',
+        'imported',
+        'administrator',
+        'wordpress_user',
+        'woocommerce_user',
+        'woocommerce_checkout',
+      ])
+    ) {
       throw new \InvalidArgumentException("Invalid source '{$source}' given to subscriber!");
     }
     $this->source = $source;
@@ -453,6 +463,14 @@ class SubscriberEntity {
 
   public function setLastEngagementAt(DateTimeInterface $lastEngagementAt): void {
     $this->lastEngagementAt = $lastEngagementAt;
+  }
+
+  public function setWoocommerceSyncedAt(?DateTimeInterface $woocommerceSyncedAt): void {
+    $this->woocommerceSyncedAt = $woocommerceSyncedAt;
+  }
+
+  public function getWoocommerceSyncedAt(): ?DateTimeInterface {
+    return $this->woocommerceSyncedAt;
   }
 
   /** @ORM\PreFlush */

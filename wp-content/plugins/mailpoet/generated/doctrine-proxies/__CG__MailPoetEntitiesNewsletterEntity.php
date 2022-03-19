@@ -577,12 +577,23 @@ class NewsletterEntity extends \MailPoet\Entities\NewsletterEntity implements \M
     /**
      * {@inheritDoc}
      */
-    public function getLatestQueue()
+    public function getLatestQueue(): ?\MailPoet\Entities\SendingQueueEntity
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getLatestQueue', []);
 
         return parent::getLatestQueue();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getLastUpdatedQueue(): ?\MailPoet\Entities\SendingQueueEntity
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getLastUpdatedQueue', []);
+
+        return parent::getLastUpdatedQueue();
     }
 
     /**
@@ -605,6 +616,28 @@ class NewsletterEntity extends \MailPoet\Entities\NewsletterEntity implements \M
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getProcessedAt', []);
 
         return parent::getProcessedAt();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getContent(): string
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getContent', []);
+
+        return parent::getContent();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function canBeSetSent(): bool
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'canBeSetSent', []);
+
+        return parent::canBeSetSent();
     }
 
     /**
@@ -636,7 +669,7 @@ class NewsletterEntity extends \MailPoet\Entities\NewsletterEntity implements \M
     /**
      * {@inheritDoc}
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTimeInterface
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getCreatedAt', []);
@@ -647,12 +680,12 @@ class NewsletterEntity extends \MailPoet\Entities\NewsletterEntity implements \M
     /**
      * {@inheritDoc}
      */
-    public function setCreatedAt(\DateTimeInterface $createdAt)
+    public function setCreatedAt(\DateTimeInterface $createdAt): void
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setCreatedAt', [$createdAt]);
 
-        return parent::setCreatedAt($createdAt);
+        parent::setCreatedAt($createdAt);
     }
 
     /**
