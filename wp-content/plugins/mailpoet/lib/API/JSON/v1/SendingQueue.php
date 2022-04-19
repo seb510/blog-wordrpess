@@ -11,11 +11,14 @@ use MailPoet\API\JSON\Response;
 use MailPoet\Config\AccessControl;
 use MailPoet\Cron\Triggers\WordPress;
 use MailPoet\Entities\NewsletterEntity;
+use MailPoet\Entities\ScheduledTaskEntity;
 use MailPoet\Entities\SendingQueueEntity;
+use MailPoet\Mailer\MailerFactory;
 use MailPoet\Models\Newsletter;
 use MailPoet\Models\SendingQueue as SendingQueueModel;
 use MailPoet\Newsletter\NewslettersRepository;
 use MailPoet\Newsletter\Scheduler\Scheduler;
+use MailPoet\Newsletter\Sending\ScheduledTasksRepository;
 use MailPoet\Newsletter\Sending\SendingQueuesRepository;
 use MailPoet\Segments\SubscribersFinder;
 use MailPoet\Services\Bridge;
@@ -42,18 +45,28 @@ class SendingQueue extends APIEndpoint {
   /** @var SendingQueuesRepository */
   private $sendingQueuesRepository;
 
+  /** @var ScheduledTasksRepository */
+  private $scheduledTasksRepository;
+
+  /** @var MailerFactory */
+  private $mailerFactory;
+
   public function __construct(
     SubscribersFeature $subscribersFeature,
     NewslettersRepository $newsletterRepository,
     SendingQueuesRepository $sendingQueuesRepository,
     Bridge $bridge,
-    SubscribersFinder $subscribersFinder
+    SubscribersFinder $subscribersFinder,
+    ScheduledTasksRepository $scheduledTasksRepository,
+    MailerFactory $mailerFactory
   ) {
     $this->subscribersFeature = $subscribersFeature;
     $this->subscribersFinder = $subscribersFinder;
     $this->newsletterRepository = $newsletterRepository;
     $this->bridge = $bridge;
     $this->sendingQueuesRepository = $sendingQueuesRepository;
+    $this->scheduledTasksRepository = $scheduledTasksRepository;
+    $this->mailerFactory = $mailerFactory;
   }
 
   public function add($data = []) {
@@ -89,10 +102,9 @@ class SendingQueue extends APIEndpoint {
       ]);
     }
 
-    // check that the sending method has been configured properly
+    // check that the sending method has been configured properly by verifying that default mailer can be build
     try {
-      $mailer = new \MailPoet\Mailer\Mailer();
-      $mailer->init();
+      $this->mailerFactory->getDefaultMailer();
     } catch (\Exception $e) {
       return $this->errorResponse([
         $e->getCode() => $e->getMessage(),
@@ -131,9 +143,15 @@ class SendingQueue extends APIEndpoint {
       $queue->status = SendingQueueModel::STATUS_SCHEDULED;
       $queue->scheduledAt = Scheduler::formatDatetimeString($newsletterEntity->getOptionValue('scheduledAt'));
     } else {
-      $segments = $newsletter->segments()->findMany();
-      $subscribersCount = $this->subscribersFinder->addSubscribersToTaskFromSegments($queue->task(), $segments);
-      if (!$subscribersCount) {
+      $segments = $newsletterEntity->getSegmentIds();
+      $taskModel = $queue->task();
+      $taskEntity = $this->scheduledTasksRepository->findOneById($taskModel->id);
+
+      if ($taskEntity instanceof ScheduledTaskEntity) {
+        $subscribersCount = $this->subscribersFinder->addSubscribersToTaskFromSegments($taskEntity, $segments);
+      }
+
+      if (!isset($subscribersCount) || !$subscribersCount) {
         return $this->errorResponse([
           APIError::UNKNOWN => __('There are no subscribers in that list!', 'mailpoet'),
         ]);

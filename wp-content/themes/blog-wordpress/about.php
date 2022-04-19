@@ -21,6 +21,9 @@
                 </p>
             </div>
         </section>
+        <div class="social-share">
+            <?php echo do_shortcode('[Sassy_Social_Share]') ?>
+        </div>
     </main>
 
 <?php get_footer(); ?>
