@@ -44,13 +44,13 @@ get_header();
                                             <rect width="10" height="10" fill="white" transform="matrix(-1 0 0 1 10 0.5)" />
                                         </clipPath>
                                     </defs>
-                                </svg><span>Предыдущая новость</span></a>' . "\n";
+                                </svg><span>Попередій пост</span></a>' . "\n";
                             }
 
                             $next_post = get_next_post();
                             if($next_post) {
                                 $next_title = strip_tags(str_replace('"', '', $next_post->post_title));
-                                echo "\t" . '<a rel="next" href="' . get_permalink($next_post->ID) . '" title="' . $next_title. '" class="post-links__link post-links__link--next"><span>Следущая новость</span><svg width="6" height="11" viewBox="0 0 6 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                echo "\t" . '<a rel="next" href="' . get_permalink($next_post->ID) . '" title="' . $next_title. '" class="post-links__link post-links__link--next"><span>Наступний пост</span><svg width="6" height="11" viewBox="0 0 6 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path
                                         d="M5.58656 5.22558L0.961262 0.613083C0.80972 0.462049 0.56437 0.462303 0.413081 0.613865C0.26191 0.765407 0.2623 1.01089 0.413862 1.16205L4.76384 5.50002L0.413706 9.83797C0.262164 9.98914 0.261773 10.2345 0.412925 10.386C0.488764 10.462 0.58812 10.5 0.687475 10.5C0.786576 10.5 0.88554 10.4623 0.961243 10.3868L5.58656 5.77443C5.65954 5.70181 5.7005 5.60299 5.7005 5.50002C5.7005 5.39705 5.65943 5.29834 5.58656 5.22558Z"
                                         fill="#5D71DD" />
@@ -66,7 +66,7 @@ get_header();
 	</main>
     <?php }
         else {
-        echo "<h2>Записей нет.</h2>";
+        echo "<h2>Новин не має.</h2>";
     } ?>
 
 <?php get_footer()?>

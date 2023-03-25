@@ -24,8 +24,8 @@ get_header(); ?>
                                         $category=  get_the_category();
                                         $cat_link = get_category_link( $category[0] );
                                         ?>
-                                        <a href="<?php echo $cat_link; ?>" class="blog-post__category">
-                                            <?php echo $category[0]->cat_name; ?>
+                                        <a href="<?= $cat_link; ?>" class="blog-post__category">
+                                            <?= $category[0]->cat_name; ?>
                                         </a>
                                         <h3 class="blog-post__title blog-title">
                                             <a href="<?php the_permalink();?>" class="blog-post__link">
@@ -46,8 +46,8 @@ get_header(); ?>
                     </div>
                 <?php else : ?>
                     <div class="container search-blocks__container">
-                        <h1 class="search-blocks__title blog-title">Результаты поиска</h1>
-                        <span class="not-found-text">Ничего не найдено</span>
+                        <h1 class="search-blocks__title blog-title">Результати пошуку</h1>
+                        <span class="not-found-text">Нічого не знайдено</span>
                     </div>
                 <?php endif; ?>
                 <?php get_sidebar(); ?>

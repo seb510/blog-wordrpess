@@ -4,8 +4,8 @@
         $category=  get_the_category();
         $cat_link = get_category_link( $category[0] );
         ?>
-        <a href="<?php echo $cat_link; ?>" class="blog-post__category">
-            <?php echo $category[0]->cat_name; ?>
+        <a href="<?= $cat_link; ?>" class="blog-post__category">
+            <?= $category[0]->cat_name; ?>
         </a>
         <h3 class="blog-post__title blog-title">
             <a href="<?php the_permalink();?>" class="blog-post__link">
@@ -18,6 +18,6 @@
             echo wp_trim_words( $content, 30, '&hellip;' );
             ?>
         </p>
-        <time class="blog-post__date"><?php echo get_the_date('j F Y'); ?></time>
+        <time class="blog-post__date"><?= get_the_date('j F Y'); ?></time>
     </article>
 </li>

@@ -40,8 +40,8 @@ add_theme_support('menus');
 function wpb_custom_new_menu() {
     register_nav_menus(
         array(
-            'my-custom-menu' => __( 'My Custom Menu' ),
-            'extra-menu' => __( 'Extra Menu' )
+            'header_menu' => __( 'Header Menu' ),
+            'footer_menu' => __( 'Footer Menu' )
         )
     );
 }

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title><?php wp_title(); ?></title>
-<?php wp_head(); ?>
+    <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
@@ -12,25 +13,25 @@
     <div class="container header__container">
         <?php if (is_front_page()) { ?>
         <a class="logo header__logo">
-            <img src="<?php echo get_template_directory_uri(); ?>/assets/img/logo.svg" alt="Логотип Блога">
+            <img src="<?= get_template_directory_uri(); ?>/assets/img/logo.svg" alt="Логотип Блога">
         </a>
         <?php } else { ?>
-        <a href="<?php echo home_url(); ?>" class="logo header__logo">
-            <img src="<?php echo get_template_directory_uri(); ?>/assets/img/logo.svg" alt="Логотип Блога">
+        <a href="<?= home_url(); ?>" class="logo header__logo">
+            <img src="<?= get_template_directory_uri(); ?>/assets/img/logo.svg" alt="Логотип Блога">
         </a>
         <?php }?>
         <div class="header__wrapper">
             <div class="header__right">
                 <?php
                 wp_nav_menu( array(
-                    'theme_location' => 'my-custom-menu',
+                    'theme_location' => 'header_menu',
                     'container_class' => 'nav header__nav',
                     'container'       => 'nav',
                     'menu_class'      => 'nav__list list-reset',
                 ));
                 ?>
-                <li class="nav__item nav__item-search"><a href="#" class="nav__link search-link">Поиск</a></li>
-                <a href="tel:+798788787" class="phone">+7 (987) 887-87</a>
+                <li class="nav__item nav__item-search"><a href="#" class="nav__link search-link">Пошук</a></li>
+                <a href="+380747736862" class="phone">+38 (074) 77-36-862</a>
             </div>
         </div>
         <div class="menuToggle icon">

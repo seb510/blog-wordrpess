@@ -1,6 +1,6 @@
 <aside class="sidebar">
     <div class="popular-posts">
-        <h3 class="popular-posts__title blog-title">Популярные новости</h3>
+        <h3 class="popular-posts__title blog-title">Популярні новини</h3>
         <ul class="popular-posts__list list-reset">
             <?php
             $time = "&w=".date("W"); // За неделю
@@ -20,11 +20,11 @@
         </ul>
     </div>
     <div class="subscribe">
-        <h3 class="subscribe__title blog-title">Подписка на рассылку</h3>
+        <h3 class="subscribe__title blog-title">Підписка на новини</h3>
         <form action="#" class="subscribe__form sub-form">
             <input type="email" class="sub-form__input form-input" placeholder="Email@gmail.com">
             <button class="sub-form__btn form-btn btn-reset">
-                <span>Подписаться</span>
+                <span>Підписатися</span>
                 <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g clip-path="url(#clip0)">
                         <path

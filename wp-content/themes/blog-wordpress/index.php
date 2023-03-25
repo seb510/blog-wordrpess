@@ -9,7 +9,7 @@ get_header();
     </section>
     <section class="content">
         <div class="container">
-            <h2 class="d-flex justify-center">Главные новости</h2>
+            <h2 class="d-flex justify-center">Головні новини</h2>
         </div>
         <div class="container content__container">
             <div class="posts">
@@ -29,8 +29,8 @@ get_header();
                         $category=  get_the_category();
                         $cat_link = get_category_link( $category[0] );
                         ?>
-                        <a href="<?php echo $cat_link; ?>" class="blog-post__category">
-                            <?php echo $category[0]->cat_name; ?>
+                        <a href="<?= $cat_link; ?>" class="blog-post__category">
+                            <?= $category[0]->cat_name; ?>
                         </a>
                         <h3 class="blog-post__title blog-title">
                             <a href="<?php the_permalink();?>" class="blog-post__link">
@@ -68,7 +68,12 @@ get_header();
                 }
                 wp_reset_postdata(); ?>
                 </ul>
-                <div id="more_posts" class="btn load-more">Показать еще</div>
+                <?php
+                var_dump($query->post_count);
+                // don't display the button if there are not enough posts
+                if (  $query->post_count > 0 ) ?>
+                <div id="more_posts" class="btn load-more">Показати ще</div>
+
             </div>
             <?php get_sidebar() ?>
         </div>

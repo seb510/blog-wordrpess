@@ -20,12 +20,12 @@ jQuery(document).ready(function($) {
         });
     })
 
-    var ppp = 2; // Post per page
-    var pageNumber = 1;
+    let ppp = 2; // Post per page
+    let pageNumber = 1;
 
     function load_posts(){
         pageNumber++;
-        var str = '&pageNumber=' + pageNumber + '&ppp=' + ppp + '&action=more_post_ajax';
+        let str = '&pageNumber=' + pageNumber + '&ppp=' + ppp + '&action=more_post_ajax';
         $.ajax({
             type: "POST",
             dataType: "html",
@@ -36,24 +36,20 @@ jQuery(document).ready(function($) {
             },
             success: function(data){
                 console.log(data)
-                var $data = $(data);
+                let $data = $(data);
                 if($data.length){
                     $("#ajax-posts").append($data);
                     $("#more_posts").text('Показать еще');
                 } else{
                     $("#more_posts").fadeOut();
                 }
-            },
-            error : function(jqXHR, textStatus, errorThrown) {
-                $loader.html(jqXHR + " :: " + textStatus + " :: " + errorThrown);
             }
 
         });
         return false;
     }
 
-    $("#more_posts").on("click",function(){ // When btn is pressed.
-        $("#more_posts").attr("disabled",true); // Disable the button, temp.
+    $(document).on("click",'#more_posts',function(){
         load_posts();
     });
 
