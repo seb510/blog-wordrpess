@@ -83,11 +83,6 @@
 	body.hidden {
 		overflow: hidden;
 	}
-
-	.blog-post--main {
-		height: auto;
-	}
-
 	.post-grid {
 		display: block;
 	}
@@ -213,6 +208,13 @@
 
 	.post {
 		max-width: none;
+	}
+
+	.post-grid__item:first-child, .post-grid__item:nth-child(5n+2) {
+		grid-row: initial;
+		grid-column: initial;
+		height: fit-content;
+		min-height: fit-content;
 	}
 
 	.post-links {

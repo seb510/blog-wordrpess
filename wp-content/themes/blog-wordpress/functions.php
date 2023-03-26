@@ -2,6 +2,7 @@
 
 /*** include blog_scripts ***/
 function blog_scripts() {
+    global $wp_query;
     wp_enqueue_style( 'blog-wordpress-style', get_stylesheet_uri(), array());
     wp_style_add_data( 'blog-wordpress-style', 'rtl', 'replace' );
     wp_enqueue_style( 'blog-wordpress-normalize', get_template_directory_uri() . '/assets/css/normalize.css', array(), time() );
@@ -15,17 +16,13 @@ function blog_scripts() {
 
     wp_enqueue_script( 'blog-wordpress-main', get_template_directory_uri() . '/assets/js/script.js', array('jquery'), time(), true );
 
-    wp_localize_script( 'blog-wordpress-main', 'ajax_posts', array(
-        'ajaxurl' => admin_url( 'admin-ajax.php' ),
-        'noposts' => __('No older posts found', 'twentyfifteen'),
-    ));
-
     if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
         wp_enqueue_script( 'comment-reply' );
     }
 }
 
 add_action( 'wp_enqueue_scripts', 'blog_scripts' );
+
 
 /** Enable admin bar **/
 show_admin_bar(false);
@@ -51,29 +48,40 @@ add_action( 'init', 'wpb_custom_new_menu' );
 
 function more_post_ajax(){
 
-    $ppp = (isset($_POST["ppp"])) ? $_POST["ppp"] : 3;
-    $page = (isset($_POST['pageNumber'])) ? $_POST['pageNumber'] : 0;
+    $postsPerPage = (isset($_POST["ppp"])) ? $_POST["ppp"] : 2;
+    $page = (isset($_POST['pageNumber'])) ? $_POST['pageNumber'] : 1;
 
-    header("Content-Type: text/html");
-
-    $args = array(
+    $ajaxposts = new WP_Query([
         'suppress_filters' => true,
-        'post_type' => 'post',
-        'posts_per_page' => $ppp,
-        'paged'    => $page,
-    );
+        'post_type'      => 'post',
+        'posts_per_page' => $postsPerPage,
+        'post_status'    => 'publish',
+        'paged' => $page,
+    ]);
 
-    $loop = new WP_Query($args);
+    $response = '';
+    $max_pages = $ajaxposts->max_num_pages;
 
-    $out = '';
+    $output = '';
+    if($ajaxposts->have_posts()) {
+        ob_start();
+        while($ajaxposts->have_posts()) : $ajaxposts->the_post();
+            $response .= get_template_part('template/post');
+        endwhile;
+        $output = ob_get_contents();
+        ob_end_clean();
+    } else {
+        $response = '';
+    }
 
-    if ($loop -> have_posts()) :  while ($loop -> have_posts()) : $loop -> the_post();
-        $out .= get_template_part( 'template/post');
-    endwhile;
-    endif;
-    wp_reset_postdata();
-    die($out);
+    $result = [
+        'max' => $max_pages,
+        'html' => $output,
+    ];
+
+    echo json_encode($result);
+    exit;
 }
 
-add_action('wp_ajax_nopriv_more_post_ajax', 'more_post_ajax');
-add_action('wp_ajax_more_post_ajax', 'more_post_ajax');
+add_action('wp_ajax_more_post_ajax', 'more_post_ajax'); // wp_ajax_{action}
+add_action('wp_ajax_nopriv_more_post_ajax', 'more_post_ajax'); // wp_ajax_nopriv_{action}

@@ -1,11 +1,11 @@
 jQuery(document).ready(function($) {
 
     $(document).on('click', '.search-link', function (){
-        $('.header-search').fadeIn(600);
+        $('.header-search').fadeIn(400);
     });
 
     $(document).on('click', '.header-search__close', function (){
-        $('.header-search').fadeOut(600);
+        $('.header-search').fadeOut(400);
     });
 
     $('.nav__list').append($('.nav__item-search'));
@@ -20,30 +20,27 @@ jQuery(document).ready(function($) {
         });
     })
 
-    let ppp = 2; // Post per page
-    let pageNumber = 1;
-
     function load_posts(){
         pageNumber++;
+        console.log(pageNumber, 'pageNumber')
         let str = '&pageNumber=' + pageNumber + '&ppp=' + ppp + '&action=more_post_ajax';
         $.ajax({
             type: "POST",
-            dataType: "html",
-            url: ajax_posts.ajaxurl,
+            dataType: 'json',
+            url: '/wp-admin/admin-ajax.php',
             data: str,
             beforeSend:function (){
                 $("#more_posts").text("Загрузка...");
             },
-            success: function(data){
-                console.log(data)
-                let $data = $(data);
-                if($data.length){
-                    $("#ajax-posts").append($data);
-                    $("#more_posts").text('Показать еще');
-                } else{
-                    $("#more_posts").fadeOut();
+            success: function(data) {
+                console.log(data.max, 'max');
+                console.log(pageNumber, 'ppp')
+                $("#ajax-posts").append(data.html);
+                $("#more_posts").text('Показать еще');
+                if(pageNumber >= data.max) {
+                    $('#more_posts').hide()
                 }
-            }
+            },
 
         });
         return false;

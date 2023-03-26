@@ -13,48 +13,16 @@ get_header();
         </div>
         <div class="container content__container">
             <div class="posts">
-                <?php
-                $result = wp_get_recent_posts( [
-                    'numberposts'      => 1,
-                    'offset'           => 0,
-                    'orderby'          => 'post_date',
-                    'post_type'        => 'post',
-                    'suppress_filters' => true,
-                ], OBJECT );
-                foreach( $result as $post ){
-                    setup_postdata( $post );?>
-
-                    <article class="blog-post blog-post--main">
-                        <?php
-                        $category=  get_the_category();
-                        $cat_link = get_category_link( $category[0] );
-                        ?>
-                        <a href="<?= $cat_link; ?>" class="blog-post__category">
-                            <?= $category[0]->cat_name; ?>
-                        </a>
-                        <h3 class="blog-post__title blog-title">
-                            <a href="<?php the_permalink();?>" class="blog-post__link">
-                                <?php the_title(); ?>
-                            </a>
-                        </h3>
-                        <p class="blog-post__descr">
-                            <?php
-                            $content = get_the_content();
-                            echo wp_trim_words( $content, 30, '&hellip;' );
-                            ?>
-                        </p>
-                        <time class="blog-post__date"><?php echo get_the_date('j F Y'); ?></time>
-                    </article>
-                <?php } wp_reset_postdata(); ?>
                 <ul id="ajax-posts" class="post-grid list-reset">
                 <?php
-                $postsPerPage = 2;
+
+                $postsPerPage = 3;
+                $page = 1;
                 $args = array(
                     'post_type'      => 'post',
                     'posts_per_page' => $postsPerPage,
                     'post_status'    => 'publish',
-                    'offset'         => 1,
-                    'orderby'        => 'post_date',
+                    'paged' => $page,
                 );
 
                 $query = new WP_Query( $args );
@@ -63,16 +31,19 @@ get_header();
                 if ( $query->have_posts() ) {
                     while ( $query->have_posts() ) {
                         $query->the_post();
-                         get_template_part( 'template/post');
+                        $post_not_in[] = get_the_ID();
+                        get_template_part( 'template/post');
                     }
                 }
                 wp_reset_postdata(); ?>
                 </ul>
-                <?php
-                var_dump($query->post_count);
-                // don't display the button if there are not enough posts
-                if (  $query->post_count > 0 ) ?>
+                <?php ?>
                 <div id="more_posts" class="btn load-more">Показати ще</div>
+
+                <script>
+                    let ppp = '<?= $postsPerPage ?> '; // Post per page
+                    let pageNumber = '<?= $page; ?>';
+                </script>
 
             </div>
             <?php get_sidebar() ?>
