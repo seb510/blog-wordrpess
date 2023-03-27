@@ -83,14 +83,13 @@ body {
 	color: var(--dark-color);
 }
 
-.form-input {
+.form-input, form input, textarea {
 	width: 100%;
 	border-radius: 20px;
 	background: #f5f5f5;
 	padding-left: 30px;
 	height: 50px;
-	font-family: 'Futura PT',
-		sans-serif;
+	font-family: 'Futura PT', sans-serif;
 	font-weight: 400;
 	font-size: 18px;
 	line-height: 23px;
@@ -99,13 +98,13 @@ body {
 	display: block;
 }
 
-.form-btn, .load-more {
+.form-btn, .load-more, .wpcf7-submit {
 	width: 100%;
+	padding: 0;
 	border-radius: 20px;
 	height: 50px;
 	background-color: var(--accent-color);
-	font-family: 'Futura PT',
-		sans-serif;
+	font-family: 'Futura PT', sans-serif;
 	font-weight: 400;
 	font-size: 18px;
 	line-height: 23px;
@@ -115,11 +114,19 @@ body {
 	justify-content: center;
 }
 
+.wpcf7-submit {
+	background-image: url("data:image/svg+xml,%3Csvg width='20' height='21' viewBox='0 0 20 21' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0)'%3E%3Cpath d='M19.5857 9.85046L1.01474 1.27924C0.719033 1.14496 0.366184 1.22496 0.160475 1.47924C-0.046663 1.73352 -0.0538057 2.09494 0.143332 2.35636L6.25033 10.499L0.143332 18.6417C-0.0538057 18.9031 -0.046663 19.2659 0.159046 19.5188C0.297614 19.6917 0.504752 19.7845 0.714747 19.7845C0.816173 19.7845 0.917599 19.7631 1.01331 19.7188L19.5843 11.1476C19.8386 11.0304 20 10.7776 20 10.499C20 10.2205 19.8386 9.9676 19.5857 9.85046Z' fill='white' /%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0'%3E%3Crect width='20' height='20' fill='white' transform='translate(0 0.5)' /%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E");
+	background-size: 20px 18px;
+	background-repeat: no-repeat;
+	background-position-y: center;
+	background-position-x: 63%;
+}
+
 .form-btn span {
 	margin-right: 12px;
 }
 
-.load-more{
+.load-more {
 	max-width: 310px;
 	margin: 0 auto;
 	cursor: pointer;

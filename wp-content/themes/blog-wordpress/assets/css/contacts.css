@@ -86,11 +86,11 @@
 	background-image: url('../img/tw.svg');
 }
 
-.callback-form__input {
+.form input {
 	margin-bottom: 20px;
 }
 
-.callback-form__textarea {
+textarea {
 	resize: none;
 	margin-bottom: 20px;
 	padding-top: 10px;
